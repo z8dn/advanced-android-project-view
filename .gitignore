@@ -8,3 +8,4 @@ build
 .idea/misc.xml
 .idea/kotlinc.xml
 .idea/shelf
+.claude/

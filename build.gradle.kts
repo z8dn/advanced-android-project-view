@@ -48,8 +48,7 @@ dependencies {
     testImplementation(libs.skikoAwtRuntimeAll)
 
     intellijPlatform {
-        intellijIdea(providers.gradleProperty("platformVersion"))
-
+        androidStudio(providers.gradleProperty("platformVersion"))
         // Compose support dependencies
         @Suppress("UnstableApiUsage")
         composeUI()

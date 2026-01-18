@@ -1,15 +1,36 @@
 <idea-plugin>
-    <id>org.jetbrains.plugins.compose.template</id>
-    <name>Compose Template Example</name>
+    <id>com.z8dn.plugins.a2pt</id>
+    <name>Advanced Android Project View</name>
     <vendor url="https://www.yourcompany.com">YourCompany</vendor>
 
-    <depends>com.intellij.modules.compose</depends>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.plugins.gradle</depends>
+    <depends>org.jetbrains.android</depends>
 
-    <resource-bundle>messages.ComposeTemplateBundle</resource-bundle>
+    <resource-bundle>messages.AndroidViewBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="org.jetbrains.plugins.template.toolWindow.ComposeSamplesToolWindowFactory"
-                    icon="org.jetbrains.plugins.template.ComposeIcons.ComposeToolWindow"
-                    id="ComposeSamples"/>
+        <!-- Android View Settings Service -->
+        <applicationService serviceImplementation="com.z8dn.plugins.a2pt.AndroidViewSettings"/>
     </extensions>
+
+    <!-- Android View Node Providers -->
+    <extensions defaultExtensionNs="com.android.tools.idea.navigator">
+        <!-- Consolidated provider handles both build directories and README files to prevent duplicate module wrapping -->
+        <androidViewNodeProvider implementation="com.z8dn.plugins.a2pt.AndroidViewCustomNodesProvider"/>
+    </extensions>
+
+    <!-- Toggle Actions for Android View -->
+    <actions>
+        <group id="com.z8dn.plugins.a2pt.AppearanceActions">
+            <add-to-group group-id="ProjectView.ToolWindow.Appearance.Actions"
+                          relative-to-action="ShowBuildFilesInModuleAction"
+                          anchor="after"/>
+            <action id="com.z8dn.plugins.a2pt.ShowBuildDirectoryAction"
+                    class="com.z8dn.plugins.a2pt.ShowBuildDirectoryAction"/>
+            <action id="com.z8dn.plugins.a2pt.ShowReadmeAction"
+                    class="com.z8dn.plugins.a2pt.ShowReadmeAction"/>
+        </group>
+    </actions>
 </idea-plugin>
