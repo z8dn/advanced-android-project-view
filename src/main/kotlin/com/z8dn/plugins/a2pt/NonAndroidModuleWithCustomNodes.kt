@@ -11,27 +11,27 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 
 /**
- * Custom wrapper for non-Android module nodes that adds build directory and README file nodes.
+ * Custom wrapper for non-Android module nodes that adds build directory and custom file nodes.
  *
  * This class extends [NonAndroidModuleNode] to inject additional child nodes (build directory
- * and README files) into non-Android Gradle modules when the corresponding features are enabled.
+ * and custom files) into non-Android Gradle modules when the corresponding features are enabled.
  *
  * @param project The project containing the module
  * @param module The module to wrap
  * @param settings View settings for rendering nodes
  * @param buildDir Precomputed build directory VirtualFile, or null if not available
- * @param readmeFile Precomputed README VirtualFile, or null if not available
+ * @param customFiles Precomputed list of custom VirtualFiles matching configured patterns
  */
 class NonAndroidModuleWithCustomNodes(
     project: Project,
     module: Module,
     settings: ViewSettings,
     private val buildDir: VirtualFile? = null,
-    private val readmeFile: VirtualFile? = null
+    private val customFiles: List<VirtualFile> = emptyList()
 ) : NonAndroidModuleNode(project, module, settings) {
 
     /**
-     * Returns the module's children, including any custom nodes (build directory and README).
+     * Returns the module's children, including any custom nodes (build directory and custom files).
      *
      * @return Collection of child nodes including default children and custom additions
      */
@@ -53,11 +53,14 @@ class NonAndroidModuleWithCustomNodes(
             }
         }
 
-        // Add README file if enabled and provided
-        if (androidViewSettings.showReadme && readmeFile != null) {
-            val psiFile = psiManager.findFile(readmeFile)
-            if (psiFile != null) {
-                children.add(PsiFileNode(myProject, psiFile, settings))
+        // Add custom files if enabled and provided (deduplicated by path)
+        if (androidViewSettings.showCustomFiles && customFiles.isNotEmpty()) {
+            val uniqueFiles = customFiles.distinctBy { it.path }
+            for (file in uniqueFiles) {
+                val psiFile = psiManager.findFile(file)
+                if (psiFile != null) {
+                    children.add(PsiFileNode(myProject, psiFile, settings))
+                }
             }
         }
 

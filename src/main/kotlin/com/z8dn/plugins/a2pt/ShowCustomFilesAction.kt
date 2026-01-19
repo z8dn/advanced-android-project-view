@@ -6,26 +6,24 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.ProjectManager
 
-class ShowReadmeAction : ToggleAction(
-    { AndroidViewBundle.message("action.ShowReadmeAction.text") }
+class ShowCustomFilesAction : ToggleAction(
+    { AndroidViewBundle.message("action.ShowCustomFilesAction.text") }
 ) {
     private val settings = AndroidViewSettings.getInstance()
 
     override fun isSelected(e: AnActionEvent): Boolean {
-        return settings.showReadme
+        return settings.showCustomFiles
     }
 
     override fun setSelected(e: AnActionEvent, state: Boolean) {
-        if (settings.showReadme != state) {
-            settings.showReadme = state
+        if (settings.showCustomFiles != state) {
+            settings.showCustomFiles = state
 
             // Refresh all open projects to reflect the change
             ProjectManager.getInstance().openProjects
                 .filter { !it.isDisposed }
                 .forEach { project ->
-                    ProjectView.getInstance(project)
-                        ?.currentProjectViewPane
-                        ?.updateFromRoot(true)
+                    ProjectView.getInstance(project).currentProjectViewPane?.updateFromRoot(true)
                 }
         }
     }

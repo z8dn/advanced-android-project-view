@@ -3,6 +3,9 @@ package com.z8dn.plugins.a2pt
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VfsUtilCore
+import java.nio.file.FileSystems
+import java.nio.file.PathMatcher
 
 /**
  * Utility functions for finding files and directories in Android Project View nodes.
@@ -13,7 +16,6 @@ import com.intellij.openapi.vfs.VirtualFile
 object AndroidViewNodeUtils {
 
     private const val BUILD_DIRECTORY_NAME = "build"
-    private val README_FILE_VARIATIONS = listOf("README.md", "readme.md", "Readme.md", "README.MD")
 
     /**
      * Finds the build directory in the module's content roots.
@@ -36,25 +38,63 @@ object AndroidViewNodeUtils {
     }
 
     /**
-     * Finds a README file in the module's content roots.
-     * Searches for common README filename variations.
+     * Finds files matching the specified patterns in the module's content roots.
+     * Searches recursively through all subdirectories.
      *
      * @param module The module to search in
-     * @return The README file VirtualFile, or null if not found or module is disposed
+     * @param patterns List of file patterns (e.g., "*.md", "LICENSE", "CHANGELOG.md")
+     * @return List of matching VirtualFiles, or empty list if none found or module is disposed
      */
-    fun findReadmeFile(module: Module): VirtualFile? {
-        if (module.isDisposed) return null
+    fun findMatchingFiles(module: Module, patterns: List<String>): List<VirtualFile> {
+        if (module.isDisposed || patterns.isEmpty()) return emptyList()
 
         val contentRoots = ModuleRootManager.getInstance(module).contentRoots
+        val matchingFiles = mutableListOf<VirtualFile>()
 
         for (root in contentRoots) {
-            for (variation in README_FILE_VARIATIONS) {
-                val readme = root.findChild(variation)
-                if (readme != null && readme.isValid && !readme.isDirectory) {
-                    return readme
+            VfsUtilCore.iterateChildrenRecursively(root, null) { file ->
+                if (file.isValid && !file.isDirectory && matchesAnyPattern(file.name, patterns)) {
+                    matchingFiles.add(file)
                 }
+                true // Continue iteration
             }
         }
-        return null
+
+        return matchingFiles
+    }
+
+    /**
+     * Checks if a filename matches any of the specified patterns.
+     * Supports glob patterns (e.g., "*.md") and exact matches (case-insensitive).
+     *
+     * @param filename The filename to check
+     * @param patterns List of patterns to match against
+     * @return true if the filename matches any pattern
+     */
+    private fun matchesAnyPattern(filename: String, patterns: List<String>): Boolean {
+        val fileSystem = FileSystems.getDefault()
+        val filenameLower = filename.lowercase()
+
+        for (pattern in patterns) {
+            val patternLower = pattern.lowercase()
+
+            // Try glob pattern matching (case-insensitive)
+            try {
+                val matcher: PathMatcher = fileSystem.getPathMatcher("glob:$patternLower")
+                val path = fileSystem.getPath(filenameLower)
+                if (matcher.matches(path)) {
+                    return true
+                }
+            } catch (e: Exception) {
+                // If glob pattern fails, continue to next pattern
+            }
+
+            // Also check case-insensitive exact match
+            if (filenameLower == patternLower) {
+                return true
+            }
+        }
+
+        return false
     }
 }

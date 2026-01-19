@@ -10,16 +10,16 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.android.facet.AndroidFacet
 
 /**
- * Consolidated provider that adds custom nodes (build directory and README files) to the Android Project View.
+ * Consolidated provider that adds custom nodes (build directory and custom files) to the Android Project View.
  *
- * This provider handles both build directories and README files for Android and non-Android modules.
+ * This provider handles both build directories and custom files for Android and non-Android modules.
  * For non-Android modules, it returns a single wrapper node that aggregates all custom children,
  * preventing duplicate node creation when multiple features are enabled.
  */
 class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
 
     /**
-     * Provides custom children (build directory and README files) for Android modules.
+     * Provides custom children (build directory and custom files) for Android modules.
      *
      * @param module The module to get children for
      * @param settings View settings for rendering nodes
@@ -51,13 +51,13 @@ class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
             }
         }
 
-        // Add README file if enabled
-        if (androidViewSettings.showReadme) {
-            val readmeFile = AndroidViewNodeUtils.findReadmeFile(module)
-            if (readmeFile != null) {
-                val readmePsi = psiManager.findFile(readmeFile)
-                if (readmePsi != null) {
-                    nodes.add(PsiFileNode(module.project, readmePsi, settings))
+        // Add custom files matching the configured patterns if enabled
+        if (androidViewSettings.showCustomFiles && androidViewSettings.filePatterns.isNotEmpty()) {
+            val matchingFiles = AndroidViewNodeUtils.findMatchingFiles(module, androidViewSettings.filePatterns)
+            for (file in matchingFiles) {
+                val psiFile = psiManager.findFile(file)
+                if (psiFile != null) {
+                    nodes.add(PsiFileNode(module.project, psiFile, settings))
                 }
             }
         }
@@ -69,7 +69,7 @@ class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
      * Provides a single wrapped module node for non-Android modules.
      *
      * This method returns a single [NonAndroidModuleWithCustomNodes] wrapper that aggregates
-     * both build directory and README children, preventing duplicate nodes when both features are enabled.
+     * both build directory and custom file children, preventing duplicate nodes when both features are enabled.
      *
      * @param module The module to get nodes for
      * @param settings View settings for rendering nodes
@@ -93,16 +93,16 @@ class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
             AndroidViewNodeUtils.findBuildDirectory(module)
         } else null
 
-        val readmeFile = if (androidViewSettings.showReadme) {
-            AndroidViewNodeUtils.findReadmeFile(module)
-        } else null
+        val customFiles = if (androidViewSettings.showCustomFiles && androidViewSettings.filePatterns.isNotEmpty()) {
+            AndroidViewNodeUtils.findMatchingFiles(module, androidViewSettings.filePatterns)
+        } else emptyList()
 
         // Only return wrapper if at least one file exists
-        if (buildDir == null && readmeFile == null) {
+        if (buildDir == null && customFiles.isEmpty()) {
             return null
         }
 
         // Return single wrapper with precomputed file results
-        return listOf(NonAndroidModuleWithCustomNodes(module.project, module, settings, buildDir, readmeFile))
+        return listOf(NonAndroidModuleWithCustomNodes(module.project, module, settings, buildDir, customFiles))
     }
 }

@@ -14,7 +14,12 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
 
     var showBuildDirectory = false
-    var showReadme = false
+    var showCustomFiles = false
+    var filePatterns: MutableList<String> = mutableListOf()
+
+    // Legacy field for migration from old settings (kept for deserialization, excluded from serialization)
+    @Deprecated("Use showCustomFiles and filePatterns instead")
+    var showReadme: Boolean? = null
 
     companion object {
         @JvmStatic
@@ -24,9 +29,24 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
         }
     }
 
-    override fun getState(): AndroidViewSettings = this
+    override fun getState(): AndroidViewSettings {
+        // Return a copy without the legacy field to avoid persisting it
+        val state = AndroidViewSettings()
+        state.showBuildDirectory = showBuildDirectory
+        state.showCustomFiles = showCustomFiles
+        state.filePatterns = filePatterns.toMutableList()
+        return state
+    }
 
     override fun loadState(state: AndroidViewSettings) {
         XmlSerializerUtil.copyBean(state, this)
+
+        // Migration: if old showReadme was enabled and no patterns exist, add default README pattern
+        @Suppress("DEPRECATION")
+        if (showReadme == true && filePatterns.isEmpty()) {
+            filePatterns.add("README.md")
+            showCustomFiles = true
+            showReadme = null // Clear after migration
+        }
     }
 }

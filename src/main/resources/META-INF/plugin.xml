@@ -13,11 +13,18 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Android View Settings Service -->
         <applicationService serviceImplementation="com.z8dn.plugins.a2pt.AndroidViewSettings"/>
+
+        <!-- Android View Settings Configurable -->
+        <applicationConfigurable
+                parentId="tools"
+                instance="com.z8dn.plugins.a2pt.AndroidViewSettingsConfigurable"
+                id="com.z8dn.plugins.a2pt.settings"
+                displayName="Advanced Android Project View"/>
     </extensions>
 
     <!-- Android View Node Providers -->
     <extensions defaultExtensionNs="com.android.tools.idea.navigator">
-        <!-- Consolidated provider handles both build directories and README files to prevent duplicate module wrapping -->
+        <!-- Consolidated provider handles both build directories and custom files to prevent duplicate module wrapping -->
         <androidViewNodeProvider implementation="com.z8dn.plugins.a2pt.AndroidViewCustomNodesProvider"/>
     </extensions>
 
@@ -29,8 +36,8 @@
                           anchor="after"/>
             <action id="com.z8dn.plugins.a2pt.ShowBuildDirectoryAction"
                     class="com.z8dn.plugins.a2pt.ShowBuildDirectoryAction"/>
-            <action id="com.z8dn.plugins.a2pt.ShowReadmeAction"
-                    class="com.z8dn.plugins.a2pt.ShowReadmeAction"/>
+            <action id="com.z8dn.plugins.a2pt.ShowCustomFilesAction"
+                    class="com.z8dn.plugins.a2pt.ShowCustomFilesAction"/>
         </group>
     </actions>
 </idea-plugin>
