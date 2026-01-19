@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.z8dn.plugins.a2pt</id>
     <name>Advanced Android Project View</name>
-    <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor url="https://z8dn.github.io/">Zayden</vendor>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
