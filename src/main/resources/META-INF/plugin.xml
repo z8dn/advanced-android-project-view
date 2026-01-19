@@ -19,7 +19,8 @@
                 parentId="tools"
                 instance="com.z8dn.plugins.a2pt.AndroidViewSettingsConfigurable"
                 id="com.z8dn.plugins.a2pt.settings"
-                displayName="Advanced Android Project View"/>
+                key="settings.displayName"
+                bundle="messages.AndroidViewBundle"/>
     </extensions>
 
     <!-- Android View Node Providers -->
