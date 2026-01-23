@@ -3,7 +3,6 @@ package com.z8dn.plugins.a2pt
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VfsUtilCore
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
 
@@ -39,7 +38,7 @@ object AndroidViewNodeUtils {
 
     /**
      * Finds files matching the specified patterns in the module's content roots.
-     * Searches recursively through all subdirectories.
+     * Searches only immediate children of each content root.
      *
      * @param module The module to search in
      * @param patterns List of file patterns (e.g., "*.md", "LICENSE", "CHANGELOG.md")
@@ -52,11 +51,10 @@ object AndroidViewNodeUtils {
         val matchingFiles = mutableListOf<VirtualFile>()
 
         for (root in contentRoots) {
-            VfsUtilCore.iterateChildrenRecursively(root, null) { file ->
-                if (file.isValid && !file.isDirectory && matchesAnyPattern(file.name, patterns)) {
-                    matchingFiles.add(file)
+            for (child in root.children) {
+                if (child.isValid && !child.isDirectory && matchesAnyPattern(child.name, patterns)) {
+                    matchingFiles.add(child)
                 }
-                true // Continue iteration
             }
         }
 
