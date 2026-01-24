@@ -17,7 +17,7 @@
         <!-- Android View Settings Configurable -->
         <applicationConfigurable
                 parentId="tools"
-                instance="com.z8dn.plugins.a2pt.AndroidViewSettingsConfigurable"
+                instance="com.z8dn.plugins.a2pt.AndroidViewSettingsConfigurableNew"
                 id="com.z8dn.plugins.a2pt.settings"
                 key="settings.displayName"
                 bundle="messages.AndroidViewBundle"/>
@@ -27,6 +27,11 @@
     <extensions defaultExtensionNs="com.android.tools.idea.navigator">
         <!-- Consolidated provider handles both build directories and custom files to prevent duplicate module wrapping -->
         <androidViewNodeProvider implementation="com.z8dn.plugins.a2pt.AndroidViewCustomNodesProvider"/>
+    </extensions>
+
+    <!-- Tree Structure Provider for top-level Custom Nodes grouping -->
+    <extensions defaultExtensionNs="com.intellij">
+        <treeStructureProvider implementation="com.z8dn.plugins.a2pt.CustomNodesTreeStructureProvider"/>
     </extensions>
 
     <!-- Toggle Actions for Android View -->
@@ -39,6 +44,13 @@
                     class="com.z8dn.plugins.a2pt.ShowBuildDirectoryAction"/>
             <action id="com.z8dn.plugins.a2pt.ShowCustomFilesAction"
                     class="com.z8dn.plugins.a2pt.ShowCustomFilesAction"/>
+            <action id="com.z8dn.plugins.a2pt.GroupCustomNodesAction"
+                    class="com.z8dn.plugins.a2pt.GroupCustomNodesAction"/>
+            <separator/>
+            <action id="com.z8dn.plugins.a2pt.OpenSettingsAction"
+                    class="com.z8dn.plugins.a2pt.OpenSettingsAction"
+                    text="Advanced Android Project View Settings..."
+                    description="Open Advanced Android Project View settings"/>
         </group>
     </actions>
 </idea-plugin>

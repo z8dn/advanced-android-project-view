@@ -18,6 +18,7 @@ import org.jetbrains.android.facet.AndroidFacet
  */
 class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
 
+
     /**
      * Provides custom children (build directory and custom files) for Android modules.
      *
@@ -51,8 +52,10 @@ class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
             }
         }
 
-        // Add custom files matching the configured patterns if enabled
-        if (androidViewSettings.showCustomFiles && androidViewSettings.filePatterns.isNotEmpty()) {
+        // Add custom files matching the configured patterns if enabled and NOT grouped
+        if (androidViewSettings.showCustomFiles &&
+            androidViewSettings.filePatterns.isNotEmpty() &&
+            !androidViewSettings.groupCustomNodes) {
             val matchingFiles = AndroidViewNodeUtils.findMatchingFiles(module, androidViewSettings.filePatterns)
             for (file in matchingFiles) {
                 val psiFile = psiManager.findFile(file)
@@ -93,7 +96,9 @@ class AndroidViewCustomNodesProvider : AndroidViewNodeProvider {
             AndroidViewNodeUtils.findBuildDirectory(module)
         } else null
 
-        val customFiles = if (androidViewSettings.showCustomFiles && androidViewSettings.filePatterns.isNotEmpty()) {
+        val customFiles = if (androidViewSettings.showCustomFiles &&
+                                androidViewSettings.filePatterns.isNotEmpty() &&
+                                !androidViewSettings.groupCustomNodes) {
             AndroidViewNodeUtils.findMatchingFiles(module, androidViewSettings.filePatterns)
         } else emptyList()
 
