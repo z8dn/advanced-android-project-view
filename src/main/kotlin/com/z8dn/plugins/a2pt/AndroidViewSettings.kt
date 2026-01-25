@@ -19,10 +19,6 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
     var groupCustomNodes = true // If true, show custom nodes in top-level grouping; if false, show in modules
     var customGroupings: MutableList<CustomNodeGrouping> = mutableListOf()
 
-    // Legacy field for migration from old settings (kept for deserialization, excluded from serialization)
-    @Deprecated("Use showCustomFiles and filePatterns instead")
-    var showReadme: Boolean? = null
-
     companion object {
         @JvmStatic
         fun getInstance(): AndroidViewSettings {
@@ -44,13 +40,5 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
 
     override fun loadState(state: AndroidViewSettings) {
         XmlSerializerUtil.copyBean(state, this)
-
-        // Migration: if old showReadme was enabled and no patterns exist, add default README pattern
-        @Suppress("DEPRECATION")
-        if (showReadme == true && filePatterns.isEmpty()) {
-            filePatterns.add("README.md")
-            showCustomFiles = true
-            showReadme = null // Clear after migration
-        }
     }
 }
