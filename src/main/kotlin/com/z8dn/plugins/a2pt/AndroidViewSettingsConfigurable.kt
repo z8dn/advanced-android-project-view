@@ -19,6 +19,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
     private var panel: JPanel? = null
     private var showBuildDirectoryCheckBox: JBCheckBox? = null
     private var showCustomFilesCheckBox: JBCheckBox? = null
+    private var groupCustomNodesCheckBox: JBCheckBox? = null
     private var filePatternTable: JBTable? = null
     private var filePatternTableModel: FilePatternTableModel? = null
 
@@ -46,9 +47,17 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
             toolTipText = AndroidViewBundle.message("settings.showCustomFiles.tooltip")
             addActionListener {
                 updateFilePatternTableState()
+                updateGroupCustomNodesState()
             }
         }
         topPanel.add(showCustomFilesCheckBox)
+        topPanel.add(Box.createVerticalStrut(10))
+
+        // Group custom nodes checkbox
+        groupCustomNodesCheckBox = JBCheckBox(AndroidViewBundle.message("settings.groupCustomNodes")).apply {
+            toolTipText = AndroidViewBundle.message("settings.groupCustomNodes.tooltip")
+        }
+        topPanel.add(groupCustomNodesCheckBox)
         topPanel.add(Box.createVerticalStrut(10))
 
         mainPanel.add(topPanel, BorderLayout.NORTH)
@@ -86,6 +95,11 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
     private fun updateFilePatternTableState() {
         val enabled = showCustomFilesCheckBox?.isSelected ?: false
         filePatternTable?.isEnabled = enabled
+    }
+
+    private fun updateGroupCustomNodesState() {
+        val enabled = showCustomFilesCheckBox?.isSelected ?: false
+        groupCustomNodesCheckBox?.isEnabled = enabled
     }
 
     private fun addFilePattern() {
@@ -136,6 +150,10 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
             return true
         }
 
+        if (groupCustomNodesCheckBox?.isSelected != settings.groupCustomNodes) {
+            return true
+        }
+
         val currentPatterns = filePatternTableModel?.getPatterns() ?: emptyList()
         if (currentPatterns != settings.filePatterns) {
             return true
@@ -149,6 +167,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         settings.showBuildDirectory = showBuildDirectoryCheckBox?.isSelected ?: false
         settings.showCustomFiles = showCustomFilesCheckBox?.isSelected ?: false
+        settings.groupCustomNodes = groupCustomNodesCheckBox?.isSelected ?: true
         settings.filePatterns = filePatternTableModel?.getPatterns()?.toMutableList() ?: mutableListOf()
 
         // Refresh all open projects to reflect the changes
@@ -164,9 +183,11 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         showBuildDirectoryCheckBox?.isSelected = settings.showBuildDirectory
         showCustomFilesCheckBox?.isSelected = settings.showCustomFiles
+        groupCustomNodesCheckBox?.isSelected = settings.groupCustomNodes
         filePatternTableModel?.setPatterns(settings.filePatterns.toList())
 
         updateFilePatternTableState()
+        updateGroupCustomNodesState()
     }
 
     /**

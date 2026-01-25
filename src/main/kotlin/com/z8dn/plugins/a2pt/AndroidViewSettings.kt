@@ -16,6 +16,8 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
     var showBuildDirectory = false
     var showCustomFiles = false
     var filePatterns: MutableList<String> = mutableListOf()
+    var groupCustomNodes = true // If true, show custom nodes in top-level grouping; if false, show in modules
+    var customGroupings: MutableList<CustomNodeGrouping> = mutableListOf()
 
     // Legacy field for migration from old settings (kept for deserialization, excluded from serialization)
     @Deprecated("Use showCustomFiles and filePatterns instead")
@@ -35,6 +37,8 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
         state.showBuildDirectory = showBuildDirectory
         state.showCustomFiles = showCustomFiles
         state.filePatterns = filePatterns.toMutableList()
+        state.groupCustomNodes = groupCustomNodes
+        state.customGroupings = customGroupings.map { it.copy() }.toMutableList()
         return state
     }
 
