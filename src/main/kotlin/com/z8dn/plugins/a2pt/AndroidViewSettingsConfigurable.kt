@@ -5,136 +5,103 @@ import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.*
 import javax.swing.table.AbstractTableModel
 
 /**
- * Settings page for Android View customization.
- * Allows users to configure build directory visibility and custom file patterns to display.
+ * Settings page for Advanced Android Project View.
  */
 class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
     private var panel: JPanel? = null
     private var showBuildDirectoryCheckBox: JBCheckBox? = null
-    private var showCustomFilesCheckBox: JBCheckBox? = null
-    private var groupCustomNodesCheckBox: JBCheckBox? = null
-    private var filePatternTable: JBTable? = null
-    private var filePatternTableModel: FilePatternTableModel? = null
+    private var groupsTable: JBTable? = null
+    private var groupsTableModel: ProjectFileGroupsTableModel? = null
 
     override fun getId(): String = "com.z8dn.plugins.a2pt.settings"
 
     override fun getDisplayName(): String = "Advanced Android Project View"
 
     override fun createComponent(): JComponent {
-        val mainPanel = JPanel(BorderLayout())
+        val mainPanel = JPanel(GridBagLayout())
         mainPanel.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
 
-        // Create top panel for checkboxes
-        val topPanel = JPanel()
-        topPanel.layout = BoxLayout(topPanel, BoxLayout.Y_AXIS)
+        val gbc = GridBagConstraints()
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.anchor = GridBagConstraints.WEST
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        gbc.weightx = 1.0
+        gbc.insets = Insets(5, 5, 5, 5)
 
         // Build directory checkbox
-        showBuildDirectoryCheckBox = JBCheckBox(AndroidViewBundle.message("settings.showBuildDirectory")).apply {
-            toolTipText = AndroidViewBundle.message("settings.showBuildDirectory.tooltip")
+        showBuildDirectoryCheckBox = JBCheckBox("Show Build Directory").apply {
+            toolTipText = "Show the build directory in Android modules"
         }
-        topPanel.add(showBuildDirectoryCheckBox)
-        topPanel.add(Box.createVerticalStrut(10))
+        mainPanel.add(showBuildDirectoryCheckBox, gbc)
 
-        // Custom files checkbox
-        showCustomFilesCheckBox = JBCheckBox(AndroidViewBundle.message("settings.showCustomFiles")).apply {
-            toolTipText = AndroidViewBundle.message("settings.showCustomFiles.tooltip")
-            addActionListener {
-                updateFilePatternTableState()
-                updateGroupCustomNodesState()
-            }
-        }
-        topPanel.add(showCustomFilesCheckBox)
-        topPanel.add(Box.createVerticalStrut(10))
-
-        // Group custom nodes checkbox
-        groupCustomNodesCheckBox = JBCheckBox(AndroidViewBundle.message("settings.groupCustomNodes")).apply {
-            toolTipText = AndroidViewBundle.message("settings.groupCustomNodes.tooltip")
-        }
-        topPanel.add(groupCustomNodesCheckBox)
-        topPanel.add(Box.createVerticalStrut(10))
-
-        mainPanel.add(topPanel, BorderLayout.NORTH)
-
-        // Create file pattern table
-        filePatternTableModel = FilePatternTableModel()
-        filePatternTable = JBTable(filePatternTableModel).apply {
-            setShowGrid(true)
-            setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-        }
-
-        // Create toolbar decorator for add/remove/edit buttons
-        val tablePanel = ToolbarDecorator.createDecorator(filePatternTable!!)
-            .setAddAction { addFilePattern() }
-            .setRemoveAction { removeSelectedPattern() }
-            .setEditAction { editSelectedPattern() }
-            .setMoveUpAction(null)
-            .setMoveDownAction(null)
-            .createPanel()
-
-        // Add label and table panel
-        val tableContainerPanel = JPanel(BorderLayout())
-        tableContainerPanel.border = BorderFactory.createEmptyBorder(0, 20, 0, 0)
-
-        val label = JLabel(AndroidViewBundle.message("settings.filePatterns.label"))
-        tableContainerPanel.add(label, BorderLayout.NORTH)
-        tableContainerPanel.add(tablePanel, BorderLayout.CENTER)
-
-        mainPanel.add(tableContainerPanel, BorderLayout.CENTER)
+        // Custom file groups table
+        gbc.gridy++
+        gbc.insets = Insets(15, 5, 5, 5)
+        gbc.fill = GridBagConstraints.BOTH
+        gbc.weighty = 1.0
+        val tablePanel = createGroupsTablePanel()
+        mainPanel.add(tablePanel, gbc)
 
         panel = mainPanel
         return mainPanel
     }
 
-    private fun updateFilePatternTableState() {
-        val enabled = showCustomFilesCheckBox?.isSelected ?: false
-        filePatternTable?.isEnabled = enabled
+    private fun createGroupsTablePanel(): JPanel {
+        val panel = JPanel(BorderLayout())
+        panel.border = BorderFactory.createTitledBorder("Custom File Groups")
+
+        groupsTableModel = ProjectFileGroupsTableModel()
+        groupsTable = JBTable(groupsTableModel).apply {
+            setShowGrid(true)
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+        }
+
+        val decorator = ToolbarDecorator.createDecorator(groupsTable!!)
+            .setAddAction { addGroup() }
+            .setRemoveAction { removeGroup() }
+            .setEditAction { editGroup() }
+
+        panel.add(decorator.createPanel(), BorderLayout.CENTER)
+
+        val helpLabel = JBLabel("<html><i>Each group can contain multiple file patterns (e.g., *.md, LICENSE, README.md)</i></html>")
+        panel.add(helpLabel, BorderLayout.SOUTH)
+
+        return panel
     }
 
-    private fun updateGroupCustomNodesState() {
-        val enabled = showCustomFilesCheckBox?.isSelected ?: false
-        groupCustomNodesCheckBox?.isEnabled = enabled
-    }
-
-    private fun addFilePattern() {
-        val pattern = JOptionPane.showInputDialog(
-            panel,
-            AndroidViewBundle.message("dialog.addPattern.message"),
-            AndroidViewBundle.message("dialog.addPattern.title"),
-            JOptionPane.PLAIN_MESSAGE
-        )
-
-        if (!pattern.isNullOrBlank()) {
-            filePatternTableModel?.addPattern(pattern.trim())
+    private fun addGroup() {
+        val dialog = ProjectFileGroupDialog()
+        if (dialog.showAndGet()) {
+            groupsTableModel?.addGroup(dialog.getProjectFileGroup())
         }
     }
 
-    private fun removeSelectedPattern() {
-        val selectedRow = filePatternTable?.selectedRow ?: -1
-        if (selectedRow >= 0) {
-            filePatternTableModel?.removePattern(selectedRow)
+    private fun removeGroup() {
+        val selectedRow = groupsTable?.selectedRow
+        if (selectedRow != null && selectedRow >= 0) {
+            groupsTableModel?.removeGroup(selectedRow)
         }
     }
 
-    private fun editSelectedPattern() {
-        val selectedRow = filePatternTable?.selectedRow ?: -1
-        if (selectedRow >= 0) {
-            val currentPattern = filePatternTableModel?.getPatternAt(selectedRow) ?: return
-
-            val newPattern = JOptionPane.showInputDialog(
-                panel,
-                AndroidViewBundle.message("dialog.editPattern.message"),
-                currentPattern
-            )
-
-            if (!newPattern.isNullOrBlank()) {
-                filePatternTableModel?.updatePattern(selectedRow, newPattern.trim())
+    private fun editGroup() {
+        val selectedRow = groupsTable?.selectedRow
+        if (selectedRow != null && selectedRow >= 0) {
+            val currentGroup = groupsTableModel?.getGroup(selectedRow) ?: return
+            val dialog = ProjectFileGroupDialog(currentGroup)
+            if (dialog.showAndGet()) {
+                groupsTableModel?.updateGroup(selectedRow, dialog.getProjectFileGroup())
             }
         }
     }
@@ -146,16 +113,8 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
             return true
         }
 
-        if (showCustomFilesCheckBox?.isSelected != settings.showCustomFiles) {
-            return true
-        }
-
-        if (groupCustomNodesCheckBox?.isSelected != settings.groupCustomNodes) {
-            return true
-        }
-
-        val currentPatterns = filePatternTableModel?.getPatterns() ?: emptyList()
-        if (currentPatterns != settings.filePatterns) {
+        val currentGroups = groupsTableModel?.getGroups() ?: emptyList()
+        if (currentGroups != settings.projectFileGroups) {
             return true
         }
 
@@ -166,11 +125,15 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         val settings = AndroidViewSettings.getInstance()
 
         settings.showBuildDirectory = showBuildDirectoryCheckBox?.isSelected ?: false
-        settings.showCustomFiles = showCustomFilesCheckBox?.isSelected ?: false
-        settings.groupCustomNodes = groupCustomNodesCheckBox?.isSelected ?: true
-        settings.filePatterns = filePatternTableModel?.getPatterns()?.toMutableList() ?: mutableListOf()
+
+        // Clear and rebuild the groups list to ensure proper change detection
+        settings.projectFileGroups.clear()
+        groupsTableModel?.getGroups()?.forEach { group ->
+            settings.projectFileGroups.add(ProjectFileGroup(group.groupName, group.patterns.toMutableList()))
+        }
 
         // Refresh all open projects to reflect the changes
+        // Do this synchronously to ensure settings are applied before refresh
         ProjectManager.getInstance().openProjects
             .filter { !it.isDisposed }
             .forEach { project ->
@@ -182,66 +145,58 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         val settings = AndroidViewSettings.getInstance()
 
         showBuildDirectoryCheckBox?.isSelected = settings.showBuildDirectory
-        showCustomFilesCheckBox?.isSelected = settings.showCustomFiles
-        groupCustomNodesCheckBox?.isSelected = settings.groupCustomNodes
-        filePatternTableModel?.setPatterns(settings.filePatterns.toList())
-
-        updateFilePatternTableState()
-        updateGroupCustomNodesState()
+        groupsTableModel?.setGroups(settings.projectFileGroups.map {
+            ProjectFileGroup(it.groupName, it.patterns.toMutableList())
+        })
     }
 
     /**
-     * Table model for managing file patterns.
+     * Table model for managing custom file groups.
      */
-    private class FilePatternTableModel : AbstractTableModel() {
-        private val patterns = mutableListOf<String>()
+    private class ProjectFileGroupsTableModel : AbstractTableModel() {
+        private val groups = mutableListOf<ProjectFileGroup>()
 
-        override fun getRowCount(): Int = patterns.size
+        override fun getRowCount(): Int = groups.size
 
-        override fun getColumnCount(): Int = 1
+        override fun getColumnCount(): Int = 2
 
-        override fun getColumnName(column: Int): String = AndroidViewBundle.message("settings.filePatterns.columnName")
+        override fun getColumnName(column: Int): String = when (column) {
+            0 -> "Group Name"
+            1 -> "Patterns"
+            else -> ""
+        }
 
-        override fun getValueAt(rowIndex: Int, columnIndex: Int): Any = patterns[rowIndex]
-
-        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean = true
-
-        override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
-            val value = (aValue as? String)?.trim().orEmpty()
-            if (value.isNotBlank() && rowIndex in patterns.indices) {
-                patterns[rowIndex] = value
-                fireTableCellUpdated(rowIndex, columnIndex)
+        override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
+            val group = groups[rowIndex]
+            return when (columnIndex) {
+                0 -> group.groupName
+                1 -> group.patterns.joinToString(", ")
+                else -> ""
             }
         }
 
-        fun addPattern(pattern: String) {
-            patterns.add(pattern)
-            fireTableRowsInserted(patterns.size - 1, patterns.size - 1)
+        fun addGroup(group: ProjectFileGroup) {
+            groups.add(group)
+            fireTableRowsInserted(groups.size - 1, groups.size - 1)
         }
 
-        fun removePattern(index: Int) {
-            if (index in patterns.indices) {
-                patterns.removeAt(index)
-                fireTableRowsDeleted(index, index)
-            }
+        fun removeGroup(index: Int) {
+            groups.removeAt(index)
+            fireTableRowsDeleted(index, index)
         }
 
-        fun getPatternAt(index: Int): String? {
-            return if (index in patterns.indices) patterns[index] else null
+        fun updateGroup(index: Int, group: ProjectFileGroup) {
+            groups[index] = group
+            fireTableRowsUpdated(index, index)
         }
 
-        fun updatePattern(index: Int, newPattern: String) {
-            if (index in patterns.indices) {
-                patterns[index] = newPattern
-                fireTableCellUpdated(index, 0)
-            }
-        }
+        fun getGroup(index: Int): ProjectFileGroup = groups[index]
 
-        fun getPatterns(): List<String> = patterns.toList()
+        fun getGroups(): List<ProjectFileGroup> = groups.toList()
 
-        fun setPatterns(newPatterns: List<String>) {
-            patterns.clear()
-            patterns.addAll(newPatterns)
+        fun setGroups(newGroups: List<ProjectFileGroup>) {
+            groups.clear()
+            groups.addAll(newGroups)
             fireTableDataChanged()
         }
     }
