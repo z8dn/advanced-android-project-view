@@ -7,6 +7,17 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.RoamingType
 import com.intellij.util.xmlb.XmlSerializerUtil
 
+/**
+ * Data class representing a project file group with its name and patterns.
+ */
+data class ProjectFileGroup(
+    var groupName: String = "",
+    var patterns: MutableList<String> = mutableListOf()
+) {
+    // No-arg constructor for XML serialization
+    constructor() : this("", mutableListOf())
+}
+
 @State(
     name = "AndroidViewSettings",
     storages = [Storage("androidViewSettings.xml", roamingType = RoamingType.LOCAL)]
@@ -14,10 +25,10 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
 
     var showBuildDirectory = false
-    var showCustomFiles = false
-    var filePatterns: MutableList<String> = mutableListOf()
-    var groupCustomNodes = true // If true, show custom nodes in top-level grouping; if false, show in modules
-    var customGroupings: MutableList<CustomNodeGrouping> = mutableListOf()
+    var projectFileGroups: MutableList<ProjectFileGroup> = mutableListOf(
+        ProjectFileGroup("Documentation", mutableListOf("README.md"))
+    )
+    var showProjectFilesInModule = false // If true, show project files under each module; if false, show in project-level group
 
     companion object {
         @JvmStatic
@@ -27,16 +38,7 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
         }
     }
 
-    override fun getState(): AndroidViewSettings {
-        // Return a copy without the legacy field to avoid persisting it
-        val state = AndroidViewSettings()
-        state.showBuildDirectory = showBuildDirectory
-        state.showCustomFiles = showCustomFiles
-        state.filePatterns = filePatterns.toMutableList()
-        state.groupCustomNodes = groupCustomNodes
-        state.customGroupings = customGroupings.map { it.copy() }.toMutableList()
-        return state
-    }
+    override fun getState(): AndroidViewSettings = this
 
     override fun loadState(state: AndroidViewSettings) {
         XmlSerializerUtil.copyBean(state, this)
