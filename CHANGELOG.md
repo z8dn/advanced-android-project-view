@@ -4,10 +4,21 @@
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-01-28
+
+- Changelog update - v0.0.2 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/2
+- Add custom node grouping feature with top-level organization by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/3
+- Remove legacy showReadme field and migration logic by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/4
+- Improve UX for adding and editing project file groups by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/10
+- Add smart icon implementation for project file groups by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/11
+- Fix initialization bugs for settings and view refresh by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/9
+- Release version 0.0.3 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/12
+
 ## [0.0.2] - 2026-01-23
 
 - Limit custom node matching to immediate directory by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/1
 - @z8dn made their first contribution in https://github.com/z8dn/advanced-android-project-view/pull/1
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/z8dn/advanced-android-project-view/commits/v0.0.2
