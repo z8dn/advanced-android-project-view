@@ -95,4 +95,44 @@ object AndroidViewNodeUtils {
 
         return false
     }
+
+    /**
+     * Checks if project files should be shown inside modules rather than in a top-level group.
+     *
+     * @return true if project files should be shown in modules, false for top-level group
+     */
+    fun showProjectFilesInModule(): Boolean {
+        return AndroidViewSettings.getInstance().showProjectFilesInModule
+    }
+
+    /**
+     * Finds all project files matching the group's patterns in the module's content roots.
+     *
+     * @param module The module to search in
+     * @param group The project file group with patterns to match
+     * @return List of matching VirtualFiles
+     */
+    fun findProjectFilesForGroup(module: Module, group: ProjectFileGroup): List<VirtualFile> {
+        return findMatchingFiles(module, group.patterns)
+    }
+
+    /**
+     * Finds all project files grouped by their group configuration.
+     *
+     * @param module The module to search in
+     * @return Map of group to list of matching files
+     */
+    fun findAllProjectFilesByGroup(module: Module): Map<ProjectFileGroup, List<VirtualFile>> {
+        val settings = AndroidViewSettings.getInstance()
+        val result = mutableMapOf<ProjectFileGroup, List<VirtualFile>>()
+
+        for (group in settings.projectFileGroups) {
+            val files = findProjectFilesForGroup(module, group)
+            if (files.isNotEmpty()) {
+                result[group] = files
+            }
+        }
+
+        return result
+    }
 }
