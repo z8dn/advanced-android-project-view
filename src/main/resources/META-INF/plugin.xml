@@ -21,6 +21,9 @@
                 id="com.z8dn.plugins.a2pt.settings"
                 key="settings.displayName"
                 bundle="messages.AndroidViewBundle"/>
+
+        <!-- Startup Activity to refresh view on project open -->
+        <postStartupActivity implementation="com.z8dn.plugins.a2pt.AndroidViewStartupActivity"/>
     </extensions>
 
     <!-- Android View Node Providers -->

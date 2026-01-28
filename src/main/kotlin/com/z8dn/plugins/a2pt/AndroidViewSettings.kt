@@ -36,15 +36,7 @@ class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
         }
     }
 
-    override fun getState(): AndroidViewSettings {
-        val state = AndroidViewSettings()
-        state.showBuildDirectory = showBuildDirectory
-        state.projectFileGroups = projectFileGroups.map {
-            ProjectFileGroup(it.groupName, it.patterns.toMutableList())
-        }.toMutableList()
-        state.showProjectFilesInModule = showProjectFilesInModule
-        return state
-    }
+    override fun getState(): AndroidViewSettings = this
 
     override fun loadState(state: AndroidViewSettings) {
         XmlSerializerUtil.copyBean(state, this)
