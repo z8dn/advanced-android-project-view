@@ -29,42 +29,37 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
         module: Module,
         settings: ViewSettings
     ): List<AbstractTreeNode<*>>? {
-        if (module.isDisposed) return null
+        // This provides children for BOTH Android and non-Android modules
+        // For Android modules: called directly by AndroidModuleNode
+        // For non-Android modules: called by GradleModuleWithProjectFiles
 
-        // Only provide nodes for Android modules
-        if (AndroidFacet.getInstance(module) == null) {
+        if (!AndroidViewNodeUtils.showProjectFilesInModule()) {
             return null
         }
 
-        val androidViewSettings = AndroidViewSettings.getInstance()
-        val nodes = mutableListOf<AbstractTreeNode<*>>()
+        val children = mutableListOf<AbstractTreeNode<*>>()
         val psiManager = PsiManager.getInstance(module.project)
 
-        // Add a build directory if enabled
-        if (androidViewSettings.showBuildDirectory) {
-            val buildDir = AndroidViewNodeUtils.findBuildDirectory(module)
-            if (buildDir != null) {
-                val buildDirPsi = psiManager.findDirectory(buildDir)
-                if (buildDirPsi != null) {
-                    nodes.add(PsiDirectoryNode(module.project, buildDirPsi, settings))
+        // Add project files
+        val projectFilesByGroup = AndroidViewNodeUtils.findAllProjectFilesByGroup(module)
+        for ((_, projectFiles) in projectFilesByGroup) {
+            for (projectFile in projectFiles) {
+                val psiFile = psiManager.findFile(projectFile)
+                if (psiFile != null) {
+                    children.add(
+                        ProjectFileNode(
+                            module.project,
+                            psiFile,
+                            settings,
+                            null,  // qualifier
+                            90     // order (before build files at 100+)
+                        )
+                    )
                 }
             }
         }
 
-        // Add custom files if showing in modules
-        if (AndroidViewNodeUtils.showProjectFilesInModule()) {
-            val projectFilesByGroup = AndroidViewNodeUtils.findAllProjectFilesByGroup(module)
-            for ((_, projectFiles) in projectFilesByGroup) {
-                for (projectFile in projectFiles) {
-                    val psiFile = psiManager.findFile(projectFile)
-                    if (psiFile != null) {
-                        nodes.add(ProjectFileNode(module.project, psiFile, settings, null, 0))
-                    }
-                }
-            }
-        }
-
-        return nodes.ifEmpty { null }
+        return children.ifEmpty { null }
     }
 
     /**
@@ -83,24 +78,25 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
     ): List<AbstractTreeNode<*>>? {
         if (module.isDisposed) return null
 
-        // Only handle Gradle modules (non-Android modules)
+        // Only handle non-Android modules (Gradle modules without AndroidFacet)
         if (AndroidFacet.getInstance(module) != null) {
-            return null // Android modules handled by getModuleChildren()
+            return null // Android modules handled by AndroidViewNodeDefaultProvider
         }
 
-        val androidViewSettings = AndroidViewSettings.getInstance()
+        // Check if setting is enabled
+        if (!AndroidViewNodeUtils.showProjectFilesInModule()) {
+            return null // Feature disabled, don't replace the node
+        }
 
         // Check if there are custom files to show
-        val hasProjectFiles = if (AndroidViewNodeUtils.showProjectFilesInModule()) {
-            AndroidViewNodeUtils.findAllProjectFilesByGroup(module).isNotEmpty()
-        } else false
+        val hasProjectFiles = AndroidViewNodeUtils.findAllProjectFilesByGroup(module).isNotEmpty()
 
         // Only return wrapper if there are custom files to show
         if (!hasProjectFiles) {
-            return null
+            return null // No files to show, use default NonAndroidModuleNode
         }
 
-        // Return single wrapper for Gradle module with custom files support
+        // Return enhanced wrapper that will aggregate all provider contributions
         return listOf(GradleModuleWithProjectFiles(module.project, module, settings))
     }
 }

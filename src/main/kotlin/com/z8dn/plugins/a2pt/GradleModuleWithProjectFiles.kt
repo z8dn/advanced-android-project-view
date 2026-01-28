@@ -1,5 +1,6 @@
 package com.z8dn.plugins.a2pt
 
+import com.android.tools.idea.navigator.nodes.AndroidViewNodeProvider
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
@@ -33,24 +34,19 @@ class GradleModuleWithProjectFiles(
      * @return Collection of child nodes including default children and project file additions
      */
     override fun getModuleChildren(): Collection<AbstractTreeNode<*>> {
-        // Get default children from parent class
+        // 1. Get default children from parent NonAndroidModuleNode
+        //    This includes: NonAndroidSourceTypeNode, AndroidBuildScriptNode (if enabled)
         val children = super.getModuleChildren().toMutableList()
 
+        // 2. Ask all AndroidViewNodeProvider implementations for additional children
+        //    This is what AndroidModuleNode does but NonAndroidModuleNode doesn't!
         val module = value ?: return children
         if (module.isDisposed) return children
 
-        val psiManager = PsiManager.getInstance(myProject)
-
-        // Add project files if enabled and showing in modules
-        if (AndroidViewNodeUtils.showProjectFilesInModule()) {
-            val projectFilesByGroup = AndroidViewNodeUtils.findAllProjectFilesByGroup(module)
-            for ((_, projectFiles) in projectFilesByGroup) {
-                for (projectFile in projectFiles) {
-                    val psiFile = psiManager.findFile(projectFile)
-                    if (psiFile != null) {
-                        children.add(ProjectFileNode(myProject, psiFile, settings, null, 0))
-                    }
-                }
+        AndroidViewNodeProvider.getProviders().forEach { provider ->
+            // Each provider can contribute children (e.g., ProjectFileNode)
+            provider.getModuleChildren(module, settings)?.let { providerChildren ->
+                children.addAll(providerChildren)
             }
         }
 
