@@ -75,13 +75,10 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
         val project = module.project
         return when {
             androidFacet != null && apkFacet != null ->
-                listOf(
-                    ApkModuleNode(project, module, androidFacet, apkFacet, settings),
-                    ExternalLibrariesNode(project, settings)
-                )
+                emptyList()
 
             androidFacet != null && AndroidModel.isRequired(androidFacet) ->
-                listOf(AndroidModuleNode(project, module, settings))
+                emptyList()
 
             else -> listOf(GradleModuleWithProjectFiles(project, module, settings))
         }
