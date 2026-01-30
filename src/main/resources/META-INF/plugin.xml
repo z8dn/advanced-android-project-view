@@ -32,11 +32,6 @@
         <androidViewNodeProvider implementation="com.z8dn.plugins.a2pt.AndroidViewBuildAndReadmeProvider"/>
     </extensions>
 
-    <!-- Tree Structure Provider for top-level Project Files grouping -->
-    <extensions defaultExtensionNs="com.intellij">
-        <treeStructureProvider implementation="com.z8dn.plugins.a2pt.ProjectFilesTreeStructureProvider"/>
-    </extensions>
-
     <!-- Toggle Actions for Android View -->
     <actions>
         <group id="com.z8dn.plugins.a2pt.AppearanceActions">
