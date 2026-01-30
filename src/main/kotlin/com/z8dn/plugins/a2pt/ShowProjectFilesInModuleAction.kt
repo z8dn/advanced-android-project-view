@@ -1,7 +1,6 @@
 package com.z8dn.plugins.a2pt
 
 import com.android.tools.idea.navigator.ANDROID_VIEW_ID
-import com.android.tools.idea.navigator.AndroidProjectViewPane
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -25,7 +24,7 @@ class ShowProjectFilesInModuleAction : ToggleAction(
             ProjectManager.getInstance().openProjects
                 .filter { !it.isDisposed }
                 .forEach { project ->
-                    ProjectView.getInstance(project).currentProjectViewPane?.updateFromRoot(false)
+                    ProjectView.getInstance(project)?.refresh()
                 }
         }
     }
