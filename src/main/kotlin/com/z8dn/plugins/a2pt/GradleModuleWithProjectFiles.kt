@@ -1,14 +1,11 @@
 package com.z8dn.plugins.a2pt
 
+import com.android.tools.idea.navigator.nodes.AndroidViewNodeProvider
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
 import com.intellij.ide.projectView.ViewSettings
-import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
-import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
 
 /**
  * Wrapper for Gradle module nodes that adds project file nodes.
@@ -33,27 +30,35 @@ class GradleModuleWithProjectFiles(
      * @return Collection of child nodes including default children and project file additions
      */
     override fun getModuleChildren(): Collection<AbstractTreeNode<*>> {
-        // Get default children from parent class
-        val children = super.getModuleChildren().toMutableList()
+        val module = getModule()
+        val nodes = ArrayList<AbstractTreeNode<*>>()
 
-        val module = value ?: return children
-        if (module.isDisposed) return children
+        // Start with default children from NonAndroidModuleNode
+        nodes.addAll(super.getModuleChildren())
 
-        val psiManager = PsiManager.getInstance(myProject)
-
-        // Add project files if enabled and showing in modules
-        if (AndroidViewNodeUtils.showProjectFilesInModule()) {
-            val projectFilesByGroup = AndroidViewNodeUtils.findAllProjectFilesByGroup(module)
-            for ((_, projectFiles) in projectFilesByGroup) {
-                for (projectFile in projectFiles) {
-                    val psiFile = psiManager.findFile(projectFile)
-                    if (psiFile != null) {
-                        children.add(ProjectFileNode(myProject, psiFile, settings, null, 0))
-                    }
-                }
+        // Ask all AndroidViewNodeProvider implementations for additional children
+        // This mirrors what AndroidModuleNode does
+        for (provider in AndroidViewNodeProvider.getProviders()) {
+            val providerChildren = provider.getModuleChildren(module, settings)
+            if (providerChildren != null) {
+                nodes.addAll(providerChildren)
             }
         }
 
-        return children
+        return nodes
+    }
+
+    override fun getSortKey(): Comparable<*> {
+        return getModule().name
+    }
+
+    override fun getTypeSortKey(): Comparable<*> {
+        return sortKey
+    }
+
+    private fun getModule(): Module {
+        val module = value
+        checkNotNull(module)
+        return module
     }
 }
