@@ -1,6 +1,7 @@
 package com.z8dn.plugins.a2pt
 
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
 import java.nio.file.FileSystems
@@ -13,54 +14,6 @@ import java.nio.file.PathMatcher
  * to avoid code duplication and ensure consistent behavior.
  */
 object AndroidViewNodeUtils {
-
-    private const val BUILD_DIRECTORY_NAME = "build"
-
-    /**
-     * Finds the build directory in the module's content roots.
-     *
-     * @param module The module to search in
-     * @return The build directory VirtualFile, or null if not found or module is disposed
-     */
-    fun findBuildDirectory(module: Module): VirtualFile? {
-        if (module.isDisposed) return null
-
-        val contentRoots = ModuleRootManager.getInstance(module).contentRoots
-
-        for (root in contentRoots) {
-            val buildDir = root.findChild(BUILD_DIRECTORY_NAME)
-            if (buildDir != null && buildDir.isDirectory && buildDir.isValid) {
-                return buildDir
-            }
-        }
-        return null
-    }
-
-    /**
-     * Finds files matching the specified patterns in the module's content roots.
-     * Searches only immediate children of each content root.
-     *
-     * @param module The module to search in
-     * @param patterns List of file patterns (e.g., "*.md", "LICENSE", "CHANGELOG.md")
-     * @return List of matching VirtualFiles, or empty list if none found or module is disposed
-     */
-    fun findMatchingFiles(module: Module, patterns: List<String>): List<VirtualFile> {
-        if (module.isDisposed || patterns.isEmpty()) return emptyList()
-
-        val contentRoots = ModuleRootManager.getInstance(module).contentRoots
-        val matchingFiles = mutableListOf<VirtualFile>()
-
-        for (root in contentRoots) {
-            for (child in root.children) {
-                if (child.isValid && !child.isDirectory && matchesAnyPattern(child.name, patterns)) {
-                    matchingFiles.add(child)
-                }
-            }
-        }
-
-        return matchingFiles
-    }
-
     /**
      * Checks if a filename matches any of the specified patterns.
      * Supports glob patterns (e.g., "*.md") and exact matches (case-insensitive).
@@ -106,30 +59,42 @@ object AndroidViewNodeUtils {
     }
 
     /**
-     * Finds all project files matching the group's patterns in the module's content roots.
+     * Checks if a PsiFile should be shown in the project-level files group.
+     * Similar to showInProjectBuildScriptsGroup for build files.
      *
-     * @param module The module to search in
-     * @param group The project file group with patterns to match
-     * @return List of matching VirtualFiles
+     * @return true if file should be shown in project-level group, false if in module
      */
-    fun findProjectFilesForGroup(module: Module, group: ProjectFileGroup): List<VirtualFile> {
-        return findMatchingFiles(module, group.patterns)
+    fun showInProjectFilesGroup(): Boolean {
+        // If showProjectFilesInModule is false, all project files go to project-level group
+        return !showProjectFilesInModule()
     }
 
     /**
-     * Finds all project files grouped by their group configuration.
+     * Gets all project files from the entire project that match configured patterns.
+     * Searches all module content roots in the project.
+     * This is analogous to getting all build files from the project system.
      *
-     * @param module The module to search in
-     * @return Map of group to list of matching files
+     * @param project The project to search in
+     * @return List of all matching VirtualFiles across all modules
      */
-    fun findAllProjectFilesByGroup(module: Module): Map<ProjectFileGroup, List<VirtualFile>> {
+    fun getAllProjectFilesInProject(project: com.intellij.openapi.project.Project): List<VirtualFile> {
         val settings = AndroidViewSettings.getInstance()
-        val result = mutableMapOf<ProjectFileGroup, List<VirtualFile>>()
+        val allPatterns = settings.projectFileGroups.flatMap { it.patterns }
+        if (allPatterns.isEmpty()) return emptyList()
 
-        for (group in settings.projectFileGroups) {
-            val files = findProjectFilesForGroup(module, group)
-            if (files.isNotEmpty()) {
-                result[group] = files
+        val result = mutableListOf<VirtualFile>()
+        val moduleManager = com.intellij.openapi.module.ModuleManager.getInstance(project)
+
+        for (module in moduleManager.modules) {
+            if (module.isDisposed) continue
+
+            val contentRoots = ModuleRootManager.getInstance(module).contentRoots
+            for (root in contentRoots) {
+                for (child in root.children) {
+                    if (child.isValid && !child.isDirectory && matchesAnyPattern(child.name, allPatterns)) {
+                        result.add(child)
+                    }
+                }
             }
         }
 

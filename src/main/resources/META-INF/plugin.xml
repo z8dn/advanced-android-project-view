@@ -24,6 +24,9 @@
 
         <!-- Startup Activity to refresh view on project open -->
         <postStartupActivity implementation="com.z8dn.plugins.a2pt.AndroidViewStartupActivity"/>
+
+        <!-- Tree Structure Provider for adding project files to non-Android modules -->
+        <treeStructureProvider implementation="com.z8dn.plugins.a2pt.CustomNonAndroidNodeProvider"/>
     </extensions>
 
     <!-- Android View Node Providers -->

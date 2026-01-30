@@ -1,11 +1,20 @@
 package com.z8dn.plugins.a2pt
 
+import com.android.SdkConstants
+import com.android.tools.idea.apk.ApkFacet
+import com.android.tools.idea.model.AndroidModel
 import com.android.tools.idea.navigator.nodes.AndroidViewNodeProvider
+import com.android.tools.idea.navigator.nodes.android.AndroidModuleNode
+import com.android.tools.idea.navigator.nodes.apk.ApkModuleNode
+import com.android.tools.idea.projectsystem.getModuleSystem
 import com.intellij.ide.projectView.ViewSettings
+import com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
-import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleUtilCore
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import org.jetbrains.android.facet.AndroidFacet
 
@@ -29,74 +38,70 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
         module: Module,
         settings: ViewSettings
     ): List<AbstractTreeNode<*>>? {
-        // This provides children for BOTH Android and non-Android modules
-        // For Android modules: called directly by AndroidModuleNode
-        // For non-Android modules: called by GradleModuleWithProjectFiles
+        val result = mutableListOf<AbstractTreeNode<*>>()
+        val facet = AndroidFacet.getInstance(module) ?: return null
+        val project = facet.module.project
 
-        if (!AndroidViewNodeUtils.showProjectFilesInModule()) {
-            return null
+        val moduleSystem = module.getModuleSystem()
+        val sampleDataPsi = AndroidModuleNode.getPsiDirectory(module.project, moduleSystem.getSampleDataDirectory())
+        if (sampleDataPsi != null) {
+            result.add(PsiDirectoryNode(module.project, sampleDataPsi, settings))
         }
 
-        val children = mutableListOf<AbstractTreeNode<*>>()
-        val psiManager = PsiManager.getInstance(module.project)
-
-        // Add project files
-        val projectFilesByGroup = AndroidViewNodeUtils.findAllProjectFilesByGroup(module)
-        for ((_, projectFiles) in projectFilesByGroup) {
-            for (projectFile in projectFiles) {
-                val psiFile = psiManager.findFile(projectFile)
-                if (psiFile != null) {
-                    children.add(
-                        ProjectFileNode(
-                            module.project,
-                            psiFile,
-                            settings,
-                            null,  // qualifier
-                            90     // order (before build files at 100+)
-                        )
-                    )
+        if (AndroidViewNodeUtils.showProjectFilesInModule()) {
+            val psiManager = PsiManager.getInstance(project)
+            getProjectFiles(module).forEach {
+                val psiFile = psiManager.findFile(it)
+                if (psiFile != null && (!AndroidViewNodeUtils.showInProjectFilesGroup())) {
+                    val qualifier = if (it.fileType == FileTypeRegistry.getInstance()
+                            .findFileTypeByName("Shrinker Config File")
+                        || it.extension.equals(SdkConstants.EXT_GRADLE)
+                    ) {
+                        // Do not add "(Proguard Rules for 'module')" hint text for proguard files or "('Module') hint for gradle files shown in module
+                        null
+                    } else {
+                        it.name
+                    }
+                    result.add(ProjectFileNode(project, psiFile, settings, qualifier, 10))
                 }
             }
         }
+        return result
+    }
 
-        return children.ifEmpty { null }
+    override fun getModuleNodes(module: Module, settings: ViewSettings): List<AbstractTreeNode<*>>? {
+        val apkFacet = ApkFacet.getInstance(module)
+        val androidFacet = AndroidFacet.getInstance(module)
+        val project = module.project
+        return when {
+            androidFacet != null && apkFacet != null ->
+                listOf(
+                    ApkModuleNode(project, module, androidFacet, apkFacet, settings),
+                    ExternalLibrariesNode(project, settings)
+                )
+
+            androidFacet != null && AndroidModel.isRequired(androidFacet) ->
+                listOf(AndroidModuleNode(project, module, settings))
+
+            else -> listOf(GradleModuleWithProjectFiles(project, module, settings))
+        }
     }
 
     /**
-     * Provides a wrapper node for Gradle modules (non-Android modules) to add custom files.
+     * Gets all project files for a module, following the getBuildFiles pattern.
+     * Gets all project files from the entire project, then filters to those contained in this module.
      *
-     * This method returns a [GradleModuleWithProjectFiles] wrapper that adds custom files to Gradle modules.
-     * Note: Build directories are NOT shown for Gradle modules, only for Android modules.
-     *
-     * @param module The Gradle module to wrap
-     * @param settings View settings for rendering nodes
-     * @return List containing the wrapped module node, or null if no custom files to show
+     * @param module The module to filter files for
+     * @return List of project files (VirtualFile) belonging to this module
      */
-    override fun getModuleNodes(
-        module: Module,
-        settings: ViewSettings
-    ): List<AbstractTreeNode<*>>? {
-        if (module.isDisposed) return null
-
-        // Only handle non-Android modules (Gradle modules without AndroidFacet)
-        if (AndroidFacet.getInstance(module) != null) {
-            return null // Android modules handled by AndroidViewNodeDefaultProvider
+    private fun getProjectFiles(module: Module): List<VirtualFile> {
+        val allProjectFiles = AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
+        return allProjectFiles.filter {
+            ModuleUtilCore.moduleContainsFile(module, it, true) || ModuleUtilCore.moduleContainsFile(
+                module,
+                it,
+                false
+            )
         }
-
-        // Check if setting is enabled
-        if (!AndroidViewNodeUtils.showProjectFilesInModule()) {
-            return null // Feature disabled, don't replace the node
-        }
-
-        // Check if there are custom files to show
-        val hasProjectFiles = AndroidViewNodeUtils.findAllProjectFilesByGroup(module).isNotEmpty()
-
-        // Only return wrapper if there are custom files to show
-        if (!hasProjectFiles) {
-            return null // No files to show, use default NonAndroidModuleNode
-        }
-
-        // Return enhanced wrapper that will aggregate all provider contributions
-        return listOf(GradleModuleWithProjectFiles(module.project, module, settings))
     }
 }
