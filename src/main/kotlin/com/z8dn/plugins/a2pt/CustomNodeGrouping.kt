@@ -22,8 +22,4 @@ data class CustomNodeGrouping(
         result = 31 * result + patterns.hashCode()
         return result
     }
-
-    fun copy(): CustomNodeGrouping {
-        return CustomNodeGrouping(name, patterns.toMutableList())
-    }
 }

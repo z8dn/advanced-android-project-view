@@ -6,19 +6,21 @@ import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
-import java.awt.BorderLayout
+import com.intellij.util.ui.JBUI
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Insets
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.ListSelectionModel
 import javax.swing.table.AbstractTableModel
 
 /**
  * Dialog for adding or editing a custom file group with its patterns.
  */
 class ProjectFileGroupDialog(
-    private val existingGroup: ProjectFileGroup? = null
+    existingGroup: ProjectFileGroup? = null
 ) : DialogWrapper(true) {
 
     private val groupNameField: JBTextField = JBTextField()
@@ -51,10 +53,10 @@ class ProjectFileGroupDialog(
         gbc.gridy = 0
         gbc.anchor = GridBagConstraints.WEST
         gbc.fill = GridBagConstraints.HORIZONTAL
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = JBUI.insets(5)
 
         // Group name label
-        panel.add(JBLabel("Group Name:"), gbc)
+        panel.add(JBLabel("Group name:"), gbc)
 
         // Group name field
         gbc.gridy++
@@ -64,14 +66,14 @@ class ProjectFileGroupDialog(
 
         // Patterns section label
         gbc.gridy++
-        gbc.insets = Insets(15, 5, 5, 5)
-        panel.add(JBLabel("File Patterns:"), gbc)
+        gbc.insets = JBUI.insets(15, 5, 5, 5)
+        panel.add(JBLabel("File patterns:"), gbc)
 
         // Patterns table with toolbar
         gbc.gridy++
         gbc.fill = GridBagConstraints.BOTH
         gbc.weighty = 1.0
-        gbc.insets = Insets(5, 5, 5, 5)
+        gbc.insets = JBUI.insets(5)
 
         val decorator = ToolbarDecorator.createDecorator(patternsTable)
             .setAddAction { addPattern() }
