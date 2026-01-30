@@ -34,7 +34,7 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
             return children
         }
 
-        val module = parent.value as? Module ?: return children
+        val module = parent.value ?: return children
         val project = parent.project ?: return children
 
         val modified = ArrayList(children)

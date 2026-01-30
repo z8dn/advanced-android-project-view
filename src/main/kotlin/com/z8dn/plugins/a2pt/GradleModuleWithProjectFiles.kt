@@ -48,11 +48,11 @@ class GradleModuleWithProjectFiles(
         return nodes
     }
 
-    override fun getSortKey(): Comparable<*>? {
+    override fun getSortKey(): Comparable<*> {
         return getModule().name
     }
 
-    override fun getTypeSortKey(): Comparable<*>? {
+    override fun getTypeSortKey(): Comparable<*> {
         return sortKey
     }
 

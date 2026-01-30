@@ -1,7 +1,5 @@
 package com.z8dn.plugins.a2pt
 
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
 import java.nio.file.FileSystems
@@ -36,7 +34,7 @@ object AndroidViewNodeUtils {
                 if (matcher.matches(path)) {
                     return true
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // If glob pattern fails, continue to next pattern
             }
 
