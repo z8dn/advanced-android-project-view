@@ -49,13 +49,14 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
             result.add(PsiDirectoryNode(module.project, sampleDataPsi, settings))
         }
 
+        // Only show project files in modules if showProjectFilesInModule is true
         if (AndroidViewNodeUtils.showProjectFilesInModule()) {
             val psiManager = PsiManager.getInstance(project)
             getProjectFiles(module).forEach { file ->
                 val psiFile = psiManager.findFile(file)
-                if (psiFile != null && (!AndroidViewNodeUtils.showInProjectFilesGroup())) {
-                    val qualifier = generateDisplayName(file, module)
-                    result.add(ProjectFileNode(project, psiFile, settings, qualifier, 10))
+                if (psiFile != null) {
+                    // No qualifier needed when files are shown in their own modules
+                    result.add(ProjectFileNode(project, psiFile, settings, null, 10))
                 }
             }
         }

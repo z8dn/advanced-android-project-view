@@ -27,6 +27,9 @@
 
         <!-- Tree Structure Provider for adding project files to non-Android modules -->
         <treeStructureProvider implementation="com.z8dn.plugins.a2pt.CustomNonAndroidNodeProvider"/>
+
+        <!-- Tree Structure Provider for adding top-level ProjectFileGroupNode -->
+        <treeStructureProvider implementation="com.z8dn.plugins.a2pt.ProjectFilesTreeStructureProvider"/>
     </extensions>
 
     <!-- Android View Node Providers -->

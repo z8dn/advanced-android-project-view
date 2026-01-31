@@ -30,7 +30,7 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
             return children
         }
 
-        // Check if feature is enabled
+        // Only show project files in modules if showProjectFilesInModule is true
         if (!AndroidViewNodeUtils.showProjectFilesInModule()) {
             return children
         }
@@ -44,11 +44,11 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
         // Get project files for this module
         val projectFiles = getProjectFiles(module)
 
-        // Add ProjectFileNode for each file
+        // Add ProjectFileNode for each file (no qualifier needed when files are in their own modules)
         projectFiles.forEach { fileInfo ->
             val psiFile = psiManager.findFile(fileInfo.file)
-            if (psiFile != null && !AndroidViewNodeUtils.showInProjectFilesGroup()) {
-                modified.add(ProjectFileNode(project, psiFile, settings ?: parent.settings, fileInfo.displayName, 10))
+            if (psiFile != null) {
+                modified.add(ProjectFileNode(project, psiFile, settings ?: parent.settings, null, 10))
             }
         }
 
