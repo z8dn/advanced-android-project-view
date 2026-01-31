@@ -48,11 +48,12 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
 
         // Add a build directory if enabled
         if (androidViewSettings.showBuildDirectory) {
+            val psiManager = PsiManager.getInstance(module.project)
             val buildDir = AndroidViewNodeUtils.findBuildDirectory(module)
             if (buildDir != null) {
                 val buildDirPsi = psiManager.findDirectory(buildDir)
                 if (buildDirPsi != null) {
-                    nodes.add(PsiDirectoryNode(module.project, buildDirPsi, settings))
+                    result.add(PsiDirectoryNode(module.project, buildDirPsi, settings))
                 }
             }
         }
