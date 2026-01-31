@@ -1,17 +1,13 @@
 package com.z8dn.plugins.a2pt
 
-import com.android.SdkConstants
 import com.android.tools.idea.apk.ApkFacet
 import com.android.tools.idea.model.AndroidModel
 import com.android.tools.idea.navigator.nodes.AndroidViewNodeProvider
 import com.android.tools.idea.navigator.nodes.android.AndroidModuleNode
-import com.android.tools.idea.navigator.nodes.apk.ApkModuleNode
 import com.android.tools.idea.projectsystem.getModuleSystem
 import com.intellij.ide.projectView.ViewSettings
-import com.intellij.ide.projectView.impl.nodes.ExternalLibrariesNode
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,7 +20,7 @@ import org.jetbrains.android.facet.AndroidFacet
  * For Android modules: Adds build directory (if enabled) and custom files directly as children.
  * For Gradle modules: Wraps the module to add custom files (build directories not shown for Gradle modules).
  */
-class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
+class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
 
 
     /**
@@ -48,21 +44,28 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
             result.add(PsiDirectoryNode(module.project, sampleDataPsi, settings))
         }
 
+        val androidViewSettings = AndroidViewSettings.getInstance()
+
+        // Add a build directory if enabled
+        if (androidViewSettings.showBuildDirectory) {
+            val psiManager = PsiManager.getInstance(module.project)
+            val buildDir = AndroidViewNodeUtils.findBuildDirectory(module)
+            if (buildDir != null) {
+                val buildDirPsi = psiManager.findDirectory(buildDir)
+                if (buildDirPsi != null) {
+                    result.add(PsiDirectoryNode(module.project, buildDirPsi, settings))
+                }
+            }
+        }
+
+        // Only show project files in modules if showProjectFilesInModule is true
         if (AndroidViewNodeUtils.showProjectFilesInModule()) {
             val psiManager = PsiManager.getInstance(project)
-            getProjectFiles(module).forEach {
-                val psiFile = psiManager.findFile(it)
-                if (psiFile != null && (!AndroidViewNodeUtils.showInProjectFilesGroup())) {
-                    val qualifier = if (it.fileType == FileTypeRegistry.getInstance()
-                            .findFileTypeByName("Shrinker Config File")
-                        || it.extension.equals(SdkConstants.EXT_GRADLE)
-                    ) {
-                        // Do not add "(Proguard Rules for 'module')" hint text for proguard files or "('Module') hint for gradle files shown in module
-                        null
-                    } else {
-                        it.name
-                    }
-                    result.add(ProjectFileNode(project, psiFile, settings, qualifier, 10))
+            getProjectFiles(module).forEach { file ->
+                val psiFile = psiManager.findFile(file)
+                if (psiFile != null) {
+                    // No qualifier needed when files are shown in their own modules
+                    result.add(ProjectFileNode(project, psiFile, settings, null, 10))
                 }
             }
         }
@@ -101,4 +104,5 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
             )
         }
     }
+
 }

@@ -1,5 +1,6 @@
 package com.z8dn.plugins.a2pt
 
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VirtualFile
 import java.nio.file.FileSystems
@@ -12,6 +13,9 @@ import java.nio.file.PathMatcher
  * to avoid code duplication and ensure consistent behavior.
  */
 object AndroidViewNodeUtils {
+
+    private const val BUILD_DIRECTORY_NAME = "build"
+
     /**
      * Checks if a filename matches any of the specified patterns.
      * Supports glob patterns (e.g., "*.md") and exact matches (case-insensitive).
@@ -45,6 +49,26 @@ object AndroidViewNodeUtils {
         }
 
         return false
+    }
+
+    /**
+     * Finds the build directory in the module's content roots.
+     *
+     * @param module The module to search in
+     * @return The build directory VirtualFile, or null if not found or module is disposed
+     */
+    fun findBuildDirectory(module: Module): VirtualFile? {
+        if (module.isDisposed) return null
+
+        val contentRoots = ModuleRootManager.getInstance(module).contentRoots
+
+        for (root in contentRoots) {
+            val buildDir = root.findChild(BUILD_DIRECTORY_NAME)
+            if (buildDir != null && buildDir.isDirectory && buildDir.isValid) {
+                return buildDir
+            }
+        }
+        return null
     }
 
     /**

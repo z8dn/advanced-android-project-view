@@ -1,11 +1,9 @@
 package com.z8dn.plugins.a2pt
 
-import com.android.SdkConstants
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -29,7 +27,7 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
             return children
         }
 
-        // Check if feature is enabled
+        // Only show project files in modules if showProjectFilesInModule is true
         if (!AndroidViewNodeUtils.showProjectFilesInModule()) {
             return children
         }
@@ -43,20 +41,11 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
         // Get project files for this module
         val projectFiles = getProjectFiles(module)
 
-        // Add ProjectFileNode for each file
+        // Add ProjectFileNode for each file (no qualifier needed when files are in their own modules)
         projectFiles.forEach { file ->
             val psiFile = psiManager.findFile(file)
-            if (psiFile != null && !AndroidViewNodeUtils.showInProjectFilesGroup()) {
-                val qualifier = if (file.fileType == FileTypeRegistry.getInstance()
-                        .findFileTypeByName("Shrinker Config File")
-                    || file.extension.equals(SdkConstants.EXT_GRADLE)
-                ) {
-                    // No qualifier for proguard files or gradle files
-                    null
-                } else {
-                    file.name
-                }
-                modified.add(ProjectFileNode(project, psiFile, settings ?: parent.settings, qualifier, 10))
+            if (psiFile != null) {
+                modified.add(ProjectFileNode(project, psiFile, settings ?: parent.settings, null, 10))
             }
         }
 
