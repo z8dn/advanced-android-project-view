@@ -23,7 +23,7 @@ class ShowBuildDirectoryAction : ToggleAction(
             ProjectManager.getInstance().openProjects
                 .filter { !it.isDisposed }
                 .forEach { project ->
-                    ProjectView.getInstance(project).currentProjectViewPane?.updateFromRoot(false)
+                    ProjectView.getInstance(project)?.refresh()
                 }
         }
     }

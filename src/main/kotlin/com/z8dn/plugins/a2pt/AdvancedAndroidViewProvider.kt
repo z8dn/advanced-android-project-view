@@ -44,6 +44,19 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
             result.add(PsiDirectoryNode(module.project, sampleDataPsi, settings))
         }
 
+        val androidViewSettings = AndroidViewSettings.getInstance()
+
+        // Add a build directory if enabled
+        if (androidViewSettings.showBuildDirectory) {
+            val buildDir = AndroidViewNodeUtils.findBuildDirectory(module)
+            if (buildDir != null) {
+                val buildDirPsi = psiManager.findDirectory(buildDir)
+                if (buildDirPsi != null) {
+                    nodes.add(PsiDirectoryNode(module.project, buildDirPsi, settings))
+                }
+            }
+        }
+
         // Only show project files in modules if showProjectFilesInModule is true
         if (AndroidViewNodeUtils.showProjectFilesInModule()) {
             val psiManager = PsiManager.getInstance(project)
