@@ -1,8 +1,5 @@
 package com.z8dn.plugins.a2pt
 
-import com.android.tools.idea.projectsystem.gradle.getGradleIdentityPath
-import com.android.tools.idea.projectsystem.gradle.getGradleProjectPath
-import com.android.tools.idea.projectsystem.gradle.toHolder
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
@@ -55,7 +52,7 @@ class ProjectFileGroupNode(
             }
 
             if (module != null) {
-                val qualifier = generateDisplayName(file, module)
+                val qualifier = ProjectFileDisplayUtils.generateDisplayName(file, module)
                 result.add(ProjectFileNode(myProject, psiFile, settings, qualifier, 10))
             }
         }
@@ -101,59 +98,10 @@ class ProjectFileGroupNode(
      */
     private fun matchesAnyPattern(filename: String, patterns: List<String>): Boolean {
         for (pattern in patterns) {
-            if (matchesPattern(filename, pattern)) {
+            if (ProjectFileDisplayUtils.matchesPattern(filename, pattern)) {
                 return true
             }
         }
         return false
-    }
-
-    /**
-     * Generates a display name for a file based on its type and module.
-     * Similar to the logic in AndroidViewBuildAndReadmeProvider and CustomNonAndroidNodeProvider.
-     */
-    private fun generateDisplayName(file: VirtualFile, module: Module): String? {
-        val gradleIdentityPath = module.getGradleIdentityPath()
-        val gradleProjectPath = module.getGradleProjectPath()?.toHolder()
-
-        // Determine the project display name with appropriate prefix
-        val projectDisplayName = when {
-            gradleIdentityPath == ":" -> PROJECT_PREFIX + module.name
-            gradleProjectPath?.path == ":" -> BUILD_PREFIX + gradleIdentityPath
-            else -> MODULE_PREFIX + (gradleIdentityPath ?: module.name)
-        }
-
-        // When files are shown in top-level group, always show the full prefix
-        // to identify which module they belong to
-        return projectDisplayName
-    }
-
-    /**
-     * Checks if a filename matches a pattern (glob or exact match).
-     */
-    private fun matchesPattern(filename: String, pattern: String): Boolean {
-        val filenameLower = filename.lowercase()
-        val patternLower = pattern.lowercase()
-
-        // Try glob pattern matching
-        try {
-            val matcher = java.nio.file.FileSystems.getDefault()
-                .getPathMatcher("glob:$patternLower")
-            val path = java.nio.file.FileSystems.getDefault().getPath(filenameLower)
-            if (matcher.matches(path)) {
-                return true
-            }
-        } catch (_: Exception) {
-            // Fall through to exact match
-        }
-
-        // Exact match
-        return filenameLower == patternLower
-    }
-
-    companion object {
-        private const val MODULE_PREFIX = "Module "
-        private const val PROJECT_PREFIX = "Project: "
-        private const val BUILD_PREFIX = "Included build: "
     }
 }
