@@ -23,11 +23,9 @@ import javax.swing.Icon
  */
 class ProjectFileGroupNode(
     private val myProject: Project,
-    settings: ViewSettings,
+    private val settings: ViewSettings,
     private val fileGroup: ProjectFileGroup
 ) : AbstractTreeNode<String>(myProject, fileGroup.groupName) {
-
-    private val mySettings = settings
 
     override fun getChildren(): Collection<AbstractTreeNode<*>> {
         // Only show children if showProjectFilesInModule is false
@@ -58,7 +56,7 @@ class ProjectFileGroupNode(
 
             if (module != null) {
                 val qualifier = generateDisplayName(file, module)
-                result.add(ProjectFileNode(myProject, psiFile, mySettings, qualifier, 10))
+                result.add(ProjectFileNode(myProject, psiFile, settings, qualifier, 10))
             }
         }
 
