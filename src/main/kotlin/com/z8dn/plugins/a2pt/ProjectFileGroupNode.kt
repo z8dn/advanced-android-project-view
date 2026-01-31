@@ -5,8 +5,6 @@ import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.fileTypes.FileTypeManager
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -34,9 +32,6 @@ class ProjectFileGroupNode(
         val result = mutableListOf<AbstractTreeNode<*>>()
         val psiManager = PsiManager.getInstance(myProject)
 
-        // Group files by module for display name generation
-        val moduleManager = ModuleManager.getInstance(myProject)
-
         for (file in allProjectFiles) {
             // Only include files that match this group's patterns
             if (!matchesAnyPattern(file.name, fileGroup.patterns)) {
@@ -45,16 +40,11 @@ class ProjectFileGroupNode(
 
             val psiFile = psiManager.findFile(file) ?: continue
 
-            // Find which module contains this file
-            val module = moduleManager.modules.firstOrNull { module ->
-                ModuleUtilCore.moduleContainsFile(module, file, true) ||
-                ModuleUtilCore.moduleContainsFile(module, file, false)
-            }
+            // Find which module contains this file using efficient lookup
+            val module = ModuleUtilCore.findModuleForFile(file, myProject) ?: continue
 
-            if (module != null) {
-                val qualifier = ProjectFileDisplayUtils.generateDisplayName(file, module)
-                result.add(ProjectFileNode(myProject, psiFile, settings, qualifier, 10))
-            }
+            val qualifier = ProjectFileDisplayUtils.generateDisplayName(file, module)
+            result.add(ProjectFileNode(myProject, psiFile, settings, qualifier, 10))
         }
 
         return result
