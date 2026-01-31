@@ -35,9 +35,17 @@ class ProjectFilesTreeStructureProvider : TreeStructureProvider {
         // Get configured project file groups from settings
         val projectFileGroups = AndroidViewSettings.getInstance().projectFileGroups
 
+        // Compute all project files once to avoid repeated file system traversal
+        val allProjectFiles = AndroidViewNodeUtils.getAllProjectFilesInProject(project)
+
         // Add a ProjectFileGroupNode for each configured group
         for (fileGroup in projectFileGroups) {
-            val groupNode = ProjectFileGroupNode(project, settings ?: parent.settings, fileGroup)
+            val groupNode = ProjectFileGroupNode(
+                project,
+                settings ?: parent.settings,
+                fileGroup,
+                allProjectFiles
+            )
 
             // Only add if there are actually project files to show in this group
             if (groupNode.children.isNotEmpty()) {

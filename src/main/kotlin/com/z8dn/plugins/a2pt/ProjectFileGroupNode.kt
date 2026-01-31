@@ -24,7 +24,8 @@ import javax.swing.Icon
 class ProjectFileGroupNode(
     private val myProject: Project,
     private val settings: ViewSettings,
-    private val fileGroup: ProjectFileGroup
+    private val fileGroup: ProjectFileGroup,
+    private val allProjectFiles: List<VirtualFile>
 ) : AbstractTreeNode<String>(myProject, fileGroup.groupName) {
 
     override fun getChildren(): Collection<AbstractTreeNode<*>> {
@@ -35,7 +36,6 @@ class ProjectFileGroupNode(
 
         val result = mutableListOf<AbstractTreeNode<*>>()
         val psiManager = PsiManager.getInstance(myProject)
-        val allProjectFiles = AndroidViewNodeUtils.getAllProjectFilesInProject(myProject)
 
         // Group files by module for display name generation
         val moduleManager = ModuleManager.getInstance(myProject)
