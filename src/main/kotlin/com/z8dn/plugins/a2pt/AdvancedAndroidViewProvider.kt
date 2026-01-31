@@ -1,18 +1,13 @@
 package com.z8dn.plugins.a2pt
 
-import com.android.SdkConstants
 import com.android.tools.idea.apk.ApkFacet
 import com.android.tools.idea.model.AndroidModel
 import com.android.tools.idea.navigator.nodes.AndroidViewNodeProvider
 import com.android.tools.idea.navigator.nodes.android.AndroidModuleNode
 import com.android.tools.idea.projectsystem.getModuleSystem
-import com.android.tools.idea.projectsystem.gradle.getGradleIdentityPath
-import com.android.tools.idea.projectsystem.gradle.getGradleProjectPath
-import com.android.tools.idea.projectsystem.gradle.toHolder
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -25,7 +20,7 @@ import org.jetbrains.android.facet.AndroidFacet
  * For Android modules: Adds build directory (if enabled) and custom files directly as children.
  * For Gradle modules: Wraps the module to add custom files (build directories not shown for Gradle modules).
  */
-class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
+class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
 
 
     /**
@@ -96,75 +91,4 @@ class AndroidViewBuildAndReadmeProvider : AndroidViewNodeProvider {
         }
     }
 
-    /**
-     * Generates a display name for a file based on its type and module.
-     * Returns null for files that shouldn't show a qualifier (Proguard, Gradle).
-     *
-     * Similar to BuildConfigurationSourceProvider.ConfigurationFile.getDisplayName()
-     */
-    private fun generateDisplayName(file: VirtualFile, module: Module): String? {
-        // Don't show qualifier for Proguard or Gradle files
-        if (file.fileType == FileTypeRegistry.getInstance().findFileTypeByName("Shrinker Config File") ||
-            file.extension.equals(SdkConstants.EXT_GRADLE)) {
-            return null
-        }
-
-        // Get Gradle identity path and project path to determine the display name format
-        val gradleIdentityPath = module.getGradleIdentityPath()
-        val gradleProjectPath = module.getGradleProjectPath()?.toHolder()
-
-        // Determine the project display name with appropriate prefix
-        val projectDisplayName = when {
-            gradleIdentityPath == ":" -> PROJECT_PREFIX + module.name
-            gradleProjectPath?.path == ":" -> BUILD_PREFIX + gradleIdentityPath
-            else -> MODULE_PREFIX + (gradleIdentityPath ?: module.name)
-        }
-
-        // Find matching group to get display name format
-        val settings = AndroidViewSettings.getInstance()
-        val matchingGroup = settings.projectFileGroups.find { group ->
-            group.patterns.any { pattern ->
-                matchesPattern(file.name, pattern)
-            }
-        }
-
-        // Use pattern similar to BuildConfigurationSourceProvider:
-        // - With group name: "GroupName for 'displayPath'"
-        // - Without group name: Use the projectDisplayName directly
-        return if (matchingGroup != null && matchingGroup.groupName.isNotEmpty()) {
-            val displayPath = gradleIdentityPath ?: module.name
-            displayPath
-        } else {
-            projectDisplayName
-        }
-    }
-
-    /**
-     * Checks if a filename matches a pattern (glob or exact match).
-     */
-    private fun matchesPattern(filename: String, pattern: String): Boolean {
-        val filenameLower = filename.lowercase()
-        val patternLower = pattern.lowercase()
-
-        // Try glob pattern matching
-        try {
-            val matcher = java.nio.file.FileSystems.getDefault()
-                .getPathMatcher("glob:$patternLower")
-            val path = java.nio.file.FileSystems.getDefault().getPath(filenameLower)
-            if (matcher.matches(path)) {
-                return true
-            }
-        } catch (_: Exception) {
-            // Fall through to exact match
-        }
-
-        // Exact match
-        return filenameLower == patternLower
-    }
-
-    companion object {
-        private const val MODULE_PREFIX = "Module "
-        private const val PROJECT_PREFIX = "Project: "
-        private const val BUILD_PREFIX = "Included build: "
-    }
 }

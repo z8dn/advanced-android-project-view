@@ -35,7 +35,7 @@
     <!-- Android View Node Providers -->
     <extensions defaultExtensionNs="com.android.tools.idea.navigator">
         <!-- Provider that handles build directories and project files -->
-        <androidViewNodeProvider implementation="com.z8dn.plugins.a2pt.AndroidViewBuildAndReadmeProvider"/>
+        <androidViewNodeProvider implementation="com.z8dn.plugins.a2pt.AdvancedAndroidViewProvider"/>
     </extensions>
 
     <!-- Toggle Actions for Android View -->
