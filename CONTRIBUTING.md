@@ -23,7 +23,7 @@ This project adheres to a code of conduct that all contributors are expected to 
 
 - **JDK 21 or later**: Required for building the plugin
 - **Gradle 8.14.3+**: Included via Gradle Wrapper
-- **Android Studio Otter 3 (2025.2.3.9) or later**: For development and testing
+- **Android Studio Otter 3 or later**: For development and testing
 - **Git**: For version control
 
 ### Setting Up Your Development Environment
@@ -100,7 +100,7 @@ A good bug report should include:
 ## Bug: Build directory toggle doesn't persist after restart
 
 **Environment:**
-- Android Studio: Otter 3 Feature Drop (2025.2.3.9)
+- Android Studio: Otter 3
 - Plugin version: 1.0.0
 - OS: macOS 14.2
 - JDK: 21.0.1
@@ -210,27 +210,8 @@ For feature requests, please include:
 
 ### Documentation
 
-- **KDoc**: Document all public APIs
 - **Comments**: Explain "why", not "what"
 - **README**: Update if adding user-facing features
-
-**KDoc Example:**
-
-```kotlin
-/**
- * Finds the build directory for the specified module.
- *
- * This method searches through the module's content roots to locate
- * a directory named "build". The search is performed only if the
- * module has not been disposed.
- *
- * @param module The module to search within
- * @return The build directory VirtualFile, or null if not found or module is disposed
- */
-fun findBuildDirectory(module: Module): VirtualFile? {
-    // implementation
-}
-```
 
 ### Architecture Principles
 
@@ -255,18 +236,15 @@ fun findBuildDirectory(module: Module): VirtualFile? {
 # Run all tests
 ./gradlew test
 
-# Run with coverage
-./gradlew check koverHtmlReport
-
-# View coverage report
-open build/reports/kover/html/index.html
+# Run all checks (tests + inspections)
+./gradlew check
 ```
 
 ### Writing Tests
 
 - **Unit tests**: Test individual functions in isolation
 - **Integration tests**: Test component interactions
-- **Test coverage**: Aim for >80% coverage on new code
+- **Test naming**: Use descriptive names that explain what is being tested
 
 **Example Test:**
 
