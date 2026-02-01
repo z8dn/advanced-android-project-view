@@ -28,7 +28,10 @@ class ProjectFileGroupDialog(
     private val patternsTableModel: PatternsTableModel
 
     init {
-        title = if (existingGroup == null) "Add Custom File Group" else "Edit Custom File Group"
+        title = if (existingGroup == null)
+            AndroidViewBundle.message("dialog.projectFileGroup.title.add")
+        else
+            AndroidViewBundle.message("dialog.projectFileGroup.title.edit")
 
         patternsTableModel = PatternsTableModel()
         patternsTable = JBTable(patternsTableModel).apply {
@@ -56,7 +59,7 @@ class ProjectFileGroupDialog(
         gbc.insets = JBUI.insets(5)
 
         // Group name label
-        panel.add(JBLabel("Group name:"), gbc)
+        panel.add(JBLabel(AndroidViewBundle.message("dialog.projectFileGroup.groupName.label")), gbc)
 
         // Group name field
         gbc.gridy++
@@ -67,7 +70,7 @@ class ProjectFileGroupDialog(
         // Patterns section label
         gbc.gridy++
         gbc.insets = JBUI.insets(15, 5, 5, 5)
-        panel.add(JBLabel("File patterns:"), gbc)
+        panel.add(JBLabel(AndroidViewBundle.message("dialog.projectFileGroup.patterns.label")), gbc)
 
         // Patterns table with toolbar
         gbc.gridy++
@@ -87,7 +90,7 @@ class ProjectFileGroupDialog(
         gbc.gridy++
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.weighty = 0.0
-        val helpLabel = JBLabel("<html><i>Examples: *.md, LICENSE, README.md, *.txt, .gitignore</i></html>")
+        val helpLabel = JBLabel("<html><i>${AndroidViewBundle.message("dialog.projectFileGroup.patterns.help")}</i></html>")
         panel.add(helpLabel, gbc)
 
         return panel
@@ -96,8 +99,8 @@ class ProjectFileGroupDialog(
     private fun addPattern() {
         val pattern = JOptionPane.showInputDialog(
             contentPanel,
-            "Enter file pattern:",
-            "Add Pattern",
+            AndroidViewBundle.message("dialog.addPattern.message"),
+            AndroidViewBundle.message("dialog.addPattern.title"),
             JOptionPane.PLAIN_MESSAGE
         )
         if (!pattern.isNullOrBlank()) {
@@ -118,7 +121,7 @@ class ProjectFileGroupDialog(
             val currentPattern = patternsTableModel.getPattern(selectedRow)
             val newPattern = JOptionPane.showInputDialog(
                 contentPanel,
-                "Edit file pattern:",
+                AndroidViewBundle.message("dialog.editPattern.message"),
                 currentPattern
             )
             if (!newPattern.isNullOrBlank()) {
@@ -130,11 +133,11 @@ class ProjectFileGroupDialog(
     override fun doValidate(): ValidationInfo? {
         val groupName = groupNameField.text.trim()
         if (groupName.isEmpty()) {
-            return ValidationInfo("Group name cannot be empty", groupNameField)
+            return ValidationInfo(AndroidViewBundle.message("dialog.validation.groupNameEmpty"), groupNameField)
         }
 
         if (patternsTableModel.getPatterns().isEmpty()) {
-            return ValidationInfo("At least one pattern is required", patternsTable)
+            return ValidationInfo(AndroidViewBundle.message("dialog.validation.patternsEmpty"), patternsTable)
         }
 
         return null
@@ -160,7 +163,7 @@ class ProjectFileGroupDialog(
 
         override fun getColumnCount(): Int = 1
 
-        override fun getColumnName(column: Int): String = "Pattern"
+        override fun getColumnName(column: Int): String = AndroidViewBundle.message("dialog.projectFileGroup.table.columnName")
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): String = patterns[rowIndex]
 
