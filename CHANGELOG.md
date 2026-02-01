@@ -2,6 +2,8 @@
 
 # IntelliJ Platform Plugin Template Changelog
 
+## [Unreleased]
+
 ## [0.0.4] - 2026-01-31
 
 - Fix project tree collapse and refactor node providers by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/13
