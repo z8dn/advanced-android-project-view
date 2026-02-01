@@ -1,10 +1,13 @@
-# Advanced Android Project View (A2PT)
+<h1 align="center">Advanced Android Project View (A2PT)</h1></br>
 
-[![Build](https://github.com/z8dn/advanced-android-project-view/workflows/Build/badge.svg)](https://github.com/z8dn/advanced-android-project-view/actions)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+<p align="center">
+  <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
+  <a href="https://plugins.jetbrains.com/plugin/29265-revenuecat-dashboard"><img alt="JetBrains Plugin" src="https://img.shields.io/badge/JetBrains-Plugin-orange.svg"/></a>
+  <a href="https://github.com/z8dn/advanced-android-project-view/actions"><img alt="Build" src="https://github.com/z8dn/advanced-android-project-view/workflows/Build/badge.svg"/></a>
+</p>
 
 <!-- Plugin description -->
-**Advanced Android Project View** enhances the Android Studio project view by providing quick access to commonly used directories and files that are normally hidden or difficult to navigate to. This plugin helps Android developers streamline their workflow by making build directories and README files readily accessible in the project tree.
+**Advanced Android Project View** enhances the Android Studio project view by providing quick access to commonly used directories and files that are normally hidden or difficult to navigate to. This plugin helps Android developers streamline their workflow by making build directories readily accessible and organizing project files with customizable groups in the project tree.
 <!-- Plugin description end -->
 
 ## Features
@@ -12,8 +15,13 @@
 ### 🗂️ Build Directory Visibility
 Toggle visibility of `build` directories for all modules directly in the Android Project View. No more navigating through the file system to inspect build outputs, APKs, or generated files.
 
-### 📄 README File Display
-Instantly access README files from any module in your project tree. Perfect for documenting module-specific information and keeping documentation close to the code.
+### 📦 Custom Project File Grouping
+Organize and access project-level files with customizable groups:
+- Create named groups for any file pattern (e.g., "Documentation" for `*.md`, "AI Rules" for `CLAUDE.md`, "Configs" for `*.yml`)
+- Support for wildcard patterns (`*.md`, `*.yml`) and exact filenames (`CLAUDE.md`)
+- Smart icons that automatically match file types for single-pattern groups
+- Display files at project root or within their respective modules
+- Perfect for quick access to documentation, configuration files, AI rules, and other project-wide resources
 
 ### 🎯 Module-Level Control
 Works seamlessly with both Android and non-Android Gradle modules, automatically adapting to your project structure.
@@ -21,20 +29,22 @@ Works seamlessly with both Android and non-Android Gradle modules, automatically
 ### ⚡ Performance Optimized
 - Minimal overhead with lazy loading
 - Efficient filesystem lookups with caching
+- Precomputed file matching to avoid redundant operations
 - No impact on IDE startup time
 
 ## Installation
 
 ### From JetBrains Marketplace (Recommended)
-1. Open Android Studio
-2. Go to **Settings/Preferences** → **Plugins** → **Marketplace**
+1. Open Android Studio/IntelliJ IDEA
+2. Go to **Settings/Preferences** (⌘, on Mac or Ctrl+Alt+S on Windows/Linux) → **Plugins** → **Marketplace**
 3. Search for "Advanced Android Project View"
-4. Click **Install** and restart Android Studio
+4. Click **Install** and restart Android Studio/IntelliJ IDEA
+![img/plugin-marketplace-installation.png](img/plugin-marketplace-installation.png)
 
 ### Manual Installation
 1. Download the [latest release](https://github.com/z8dn/advanced-android-project-view/releases/latest)
 2. Open Android Studio
-3. Go to **Settings/Preferences** → **Plugins** → ⚙️ → **Install Plugin from Disk...**
+3. Go to **Settings/Preferences** (⌘, on Mac or Ctrl+Alt+S on Windows/Linux) → **Plugins** → ⚙️ → **Install Plugin from Disk...**
 4. Select the downloaded ZIP file
 5. Restart Android Studio
 
@@ -45,14 +55,22 @@ Works seamlessly with both Android and non-Android Gradle modules, automatically
 2. Click the **Android** dropdown at the top of the project pane
 3. Look for "Display Build Directory" in the appearance actions menu
 4. Toggle the option on/off
-
+![img/build-directory-toggle.png](img/build-directory-toggle.png)
 Alternatively, right-click in the Project View toolbar and select appearance options.
 
-### Toggle README Visibility
-1. Open the Android Project View
-2. Click the **Android** dropdown at the top of the project pane
-3. Look for "Display README Files" in the appearance actions menu
-4. Toggle the option on/off
+### Configure Project File Groups
+1. Go to **Settings/Preferences** → **Tools** → **Advanced Android Project View**
+2. Click **Add** to create a new file group
+3. Enter a group name (e.g., "Documentation", "AI Rules")
+   ![img/settings-custom-file-groups.png](img/settings-custom-file-groups.png)
+4. Add file patterns using wildcards (e.g., `*.md`) or exact filenames (e.g., `CLAUDE.md`)
+![img/edit-file-group-dialog.png](img/edit-file-group-dialog.png)
+5. Click **OK** to apply changes
+
+**Pattern Examples:**
+- `*.md` - All Markdown files
+- `CLAUDE.md` - Claude AI rules file
+- `*.yml` - All YAML configuration files
 
 Your preferences are saved automatically and will persist across IDE restarts.
 
@@ -82,63 +100,6 @@ cd advanced-android-project-view
 # The plugin ZIP will be created in build/distributions/
 ```
 
-### Running in Development Mode
-
-```bash
-# Launch Android Studio with the plugin installed
-./gradlew runIde
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-./gradlew check
-
-# Run tests with coverage
-./gradlew check koverHtmlReport
-```
-
-## Contributing
-
-We welcome contributions from the community! Whether you want to fix a bug, add a feature, or improve documentation, your help is appreciated.
-
-Please read our [Contributing Guidelines](./CONTRIBUTING.md) for detailed information on:
-
-- 🐛 Reporting issues
-- ✨ Submitting pull requests
-- 📝 Code style and conventions
-- 🧪 Testing requirements
-- 💬 Commit message format
-
-For quick reference:
-- Use [Conventional Commits](https://www.conventionalcommits.org/) format
-- Ensure all tests pass with `./gradlew check`
-- Follow Kotlin coding conventions
-- Add tests for new features
-
-## Architecture
-
-The plugin uses the IntelliJ Platform's extension point system:
-
-```text
-com.z8dn.plugins.a2pt/
-├── AndroidViewSettings          # Persistent settings storage
-├── AndroidViewCustomNodesProvider  # Main provider for custom nodes
-├── AndroidViewNodeUtils         # Shared utility methods
-├── NonAndroidModuleWithCustomNodes # Wrapper for non-Android modules
-└── Actions/
-    ├── ShowBuildDirectoryAction # Toggle for build directories
-    └── ShowReadmeAction        # Toggle for README files
-```
-
-### Key Design Decisions
-
-- **Single Provider Pattern**: Uses one consolidated provider to avoid duplicate node creation
-- **Lazy Evaluation**: Files are discovered only when needed
-- **Precomputed Results**: Filesystem lookups are cached to prevent redundant operations
-- **Module Disposal Checks**: Gracefully handles module lifecycle events
-
 ## License
 
 ```text
@@ -148,7 +109,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+    https://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
