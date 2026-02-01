@@ -26,7 +26,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
     override fun getId(): String = "com.z8dn.plugins.a2pt.settings"
 
-    override fun getDisplayName(): String = "Advanced Android Project View"
+    override fun getDisplayName(): String = AndroidViewBundle.message("settings.displayName")
 
     override fun createComponent(): JComponent {
         val mainPanel = JPanel(GridBagLayout())
@@ -41,8 +41,8 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         gbc.insets = Insets(5, 5, 5, 5)
 
         // Build directory checkbox
-        showBuildDirectoryCheckBox = JBCheckBox("Show Build Directory").apply {
-            toolTipText = "Show the build directory in Android modules"
+        showBuildDirectoryCheckBox = JBCheckBox(AndroidViewBundle.message("settings.showBuildDirectory")).apply {
+            toolTipText = AndroidViewBundle.message("settings.showBuildDirectory.tooltip")
         }
         mainPanel.add(showBuildDirectoryCheckBox, gbc)
 
@@ -60,7 +60,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
     private fun createGroupsTablePanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        panel.border = BorderFactory.createTitledBorder("Custom File Groups")
+        panel.border = BorderFactory.createTitledBorder(AndroidViewBundle.message("settings.customFileGroups.border"))
 
         groupsTableModel = ProjectFileGroupsTableModel()
         groupsTable = JBTable(groupsTableModel).apply {
@@ -75,7 +75,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         panel.add(decorator.createPanel(), BorderLayout.CENTER)
 
-        val helpLabel = JBLabel("<html><i>Each group can contain multiple file patterns (e.g., *.md, LICENSE, README.md)</i></html>")
+        val helpLabel = JBLabel("<html><i>${AndroidViewBundle.message("settings.customFileGroups.help")}</i></html>")
         panel.add(helpLabel, BorderLayout.SOUTH)
 
         return panel
@@ -161,8 +161,8 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         override fun getColumnCount(): Int = 2
 
         override fun getColumnName(column: Int): String = when (column) {
-            0 -> "Group Name"
-            1 -> "Patterns"
+            0 -> AndroidViewBundle.message("settings.table.columnName.groupName")
+            1 -> AndroidViewBundle.message("settings.table.columnName.patterns")
             else -> ""
         }
 
