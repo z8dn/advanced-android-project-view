@@ -4,8 +4,6 @@
 
 ## [Unreleased]
 
-## [0.0.5] - 2026-02-02
-
 ## [0.0.4] - 2026-01-31
 
 - Fix project tree collapse and refactor node providers by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/13
@@ -33,8 +31,7 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...HEAD
-[0.0.5]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...v0.0.5
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...HEAD
 [0.0.4]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/z8dn/advanced-android-project-view/commits/v0.0.2
