@@ -17,7 +17,7 @@ data class ProjectFileGroup(
 
 @State(
     name = "AndroidViewSettings",
-    storages = [Storage("androidViewSettings.xml", roamingType = RoamingType.LOCAL)]
+    storages = [Storage("androidViewSettings.xml", roamingType = RoamingType.DEFAULT)]
 )
 class AndroidViewSettings : PersistentStateComponent<AndroidViewSettings> {
 

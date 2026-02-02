@@ -26,11 +26,16 @@ Organize and access project-level files with customizable groups:
 ### 🎯 Module-Level Control
 Works seamlessly with both Android and non-Android Gradle modules, automatically adapting to your project structure.
 
-### ⚡ Performance Optimized
-- Minimal overhead with lazy loading
-- Efficient filesystem lookups with caching
-- Precomputed file matching to avoid redundant operations
-- No impact on IDE startup time
+## 🗺️ Roadmap
+
+We have exciting plans for future updates! Here are some features currently under consideration or in development:
+
+- [x] **Cloud Sync**: Sync your custom group configurations across different machines
+- [ ] **Saved Presets**: Pre-defined file groups for common stacks (KMP, Compose Multiplatform, etc.)
+- [ ] **Dynamic Icons**: Customizable icons for specific file patterns
+- [ ] **Enhanced Filtering**: More advanced pattern matching for file groups
+
+Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced-android-project-view/issues) or start a [discussion](https://github.com/z8dn/advanced-android-project-view/discussions)!
 
 ## Installation
 
