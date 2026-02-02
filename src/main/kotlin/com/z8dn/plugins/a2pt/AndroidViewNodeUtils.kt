@@ -81,17 +81,6 @@ object AndroidViewNodeUtils {
     }
 
     /**
-     * Checks if a PsiFile should be shown in the project-level files group.
-     * Similar to showInProjectBuildScriptsGroup for build files.
-     *
-     * @return true if file should be shown in project-level group, false if in module
-     */
-    fun showInProjectFilesGroup(): Boolean {
-        // If showProjectFilesInModule is false, all project files go to project-level group
-        return !showProjectFilesInModule()
-    }
-
-    /**
      * Gets all project files from the entire project that match configured patterns.
      * Searches all module content roots in the project.
      * This is analogous to getting all build files from the project system.

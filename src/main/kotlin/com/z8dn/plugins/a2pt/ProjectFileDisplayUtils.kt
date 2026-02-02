@@ -24,7 +24,7 @@ object ProjectFileDisplayUtils {
      * @param module The module containing the file
      * @return Display name with module prefix (Module/Project/Build)
      */
-    fun generateDisplayName(file: VirtualFile, module: Module): String? {
+    fun generateDisplayName(file: VirtualFile, module: Module): String {
         // Get Gradle identity path and project path to determine the display name format
         val gradleIdentityPath = module.getGradleIdentityPath()
         val gradleProjectPath = module.getGradleProjectPath()?.toHolder()
