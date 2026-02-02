@@ -4,6 +4,19 @@
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-02-02
+
+- Changelog update - v0.0.4 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/18
+- docs: update README and CONTRIBUTING to reflect current features by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/20
+- Update plugin icons by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/22
+- Update CHANGELOG.md by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/21
+- Add qodana CI checks by @qodana-cloud[bot] in https://github.com/z8dn/advanced-android-project-view/pull/19
+- Remove unused icon resources by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/23
+- Cleanup messages and replace hardcoded strings by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/24
+- Update IDEA specific configuration and icons by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/25
+- Bump pluginVersion to 0.0.5 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/26
+- @qodana-cloud[bot] made their first contribution in https://github.com/z8dn/advanced-android-project-view/pull/19
+
 ## [0.0.4] - 2026-01-31
 
 - Fix project tree collapse and refactor node providers by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/13
@@ -31,8 +44,9 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.2...v0.0.3
-[0.0.2]: https://github.com/z8dn/advanced-android-project-view/commits/v0.0.2
+[0.0.2]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/z8dn/advanced-android-project-view/commits/v0.0.1
