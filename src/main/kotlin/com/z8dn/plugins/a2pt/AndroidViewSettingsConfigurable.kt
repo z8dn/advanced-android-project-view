@@ -114,11 +114,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         }
 
         val currentGroups = groupsTableModel?.getGroups() ?: emptyList()
-        if (currentGroups != settings.projectFileGroups) {
-            return true
-        }
-
-        return false
+        return currentGroups != settings.projectFileGroups
     }
 
     override fun apply() {

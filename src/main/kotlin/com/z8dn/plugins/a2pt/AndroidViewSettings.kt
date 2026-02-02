@@ -13,10 +13,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 data class ProjectFileGroup(
     var groupName: String = "",
     var patterns: MutableList<String> = mutableListOf()
-) {
-    // No-arg constructor for XML serialization
-    constructor() : this("", mutableListOf())
-}
+)
 
 @State(
     name = "AndroidViewSettings",
