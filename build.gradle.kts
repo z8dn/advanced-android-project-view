@@ -137,6 +137,3 @@ tasks {
         dependsOn(patchChangelog)
     }
 }
-
-// do not run Plugin Verifier in the template itself
-tasks.getByName("verifyPlugin").enabled = false
