@@ -7,33 +7,24 @@
 </p>
 
 <!-- Plugin description -->
-**Advanced Android Project View** enhances the Android Studio project view by providing quick access to commonly used directories and files that are normally hidden or difficult to navigate to. This plugin helps Android developers streamline their workflow by making build directories readily accessible and organizing project files with customizable groups in the project tree.
+<p><strong>Advanced Android Project View</strong> enhances the Android Studio project view by providing quick access to commonly used directories and files that are normally hidden or difficult to navigate to.</p>
+
+<h3>Features</h3>
+<ul>
+  <li><strong>Quick Access to Build Directories:</strong> Navigate directly to build outputs, generated sources, and intermediate files without switching views or using the file system explorer.</li>
+  <li><strong>Customizable Project Groups:</strong> Organize project files with configurable groups in the project tree, tailored to your workflow and development needs.</li>
+  <li><strong>Hidden Files Visibility:</strong> Easily access configuration files and directories that are typically hidden from the standard Android view, improving discoverability and reducing context switching.</li>
+</ul>
 <!-- Plugin description end -->
-
-## Features
-
-### 🗂️ Build Directory Visibility
-Toggle visibility of `build` directories for all modules directly in the Android Project View. No more navigating through the file system to inspect build outputs, APKs, or generated files.
-
-### 📦 Custom Project File Grouping
-Organize and access project-level files with customizable groups:
-- Create named groups for any file pattern (e.g., "Documentation" for `*.md`, "AI Rules" for `CLAUDE.md`, "Configs" for `*.yml`)
-- Support for wildcard patterns (`*.md`, `*.yml`) and exact filenames (`CLAUDE.md`)
-- Smart icons that automatically match file types for single-pattern groups
-- Display files at project root or within their respective modules
-- Perfect for quick access to documentation, configuration files, AI rules, and other project-wide resources
-
-### 🎯 Module-Level Control
-Works seamlessly with both Android and non-Android Gradle modules, automatically adapting to your project structure.
 
 ## 🗺️ Roadmap
 
 We have exciting plans for future updates! Here are some features currently under consideration or in development:
 
-- [x] **Cloud Sync**: Sync your custom group configurations across different machines
-- [ ] **Saved Presets**: Pre-defined file groups for common stacks (KMP, Compose Multiplatform, etc.)
-- [ ] **Dynamic Icons**: Customizable icons for specific file patterns
-- [ ] **Enhanced Filtering**: More advanced pattern matching for file groups
+- [x] **IDE Account Sync**: Sync your custom group configurations across different machines using your IDE account
+- [ ] **Saved Presets**: Pre-defined file groups for common stacks (KMP, Compose Multiplatform, etc.) ([#30](https://github.com/z8dn/advanced-android-project-view/issues/30))
+- [ ] **Dynamic Icons**: Customizable icons for specific file patterns ([#31](https://github.com/z8dn/advanced-android-project-view/issues/31))
+- [ ] **Enhanced Filtering**: More advanced pattern matching for file groups ([#32](https://github.com/z8dn/advanced-android-project-view/issues/32))
 
 Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced-android-project-view/issues) or start a [discussion](https://github.com/z8dn/advanced-android-project-view/discussions)!
 
