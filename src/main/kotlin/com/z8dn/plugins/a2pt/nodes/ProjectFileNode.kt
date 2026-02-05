@@ -1,4 +1,4 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.nodes
 
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings

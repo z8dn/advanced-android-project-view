@@ -1,4 +1,4 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.providers
 
 import com.android.tools.idea.apk.ApkFacet
 import com.android.tools.idea.model.AndroidModel
@@ -12,6 +12,10 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.z8dn.plugins.a2pt.nodes.GradleModuleWithProjectFiles
+import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
+import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
+import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 import org.jetbrains.android.facet.AndroidFacet
 
 /**

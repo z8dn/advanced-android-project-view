@@ -1,4 +1,6 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.settings
+
+import com.z8dn.plugins.a2pt.AndroidViewBundle
 
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
@@ -29,9 +31,9 @@ class ProjectFileGroupDialog(
 
     init {
         title = if (existingGroup == null)
-            AndroidViewBundle.message("dialog.projectFileGroup.title.add")
+            AndroidViewBundle.message("dialog.ProjectFileGroup.Add.text")
         else
-            AndroidViewBundle.message("dialog.projectFileGroup.title.edit")
+            AndroidViewBundle.message("dialog.ProjectFileGroup.Edit.text")
 
         patternsTableModel = PatternsTableModel()
         patternsTable = JBTable(patternsTableModel).apply {
@@ -59,7 +61,7 @@ class ProjectFileGroupDialog(
         gbc.insets = JBUI.insets(5)
 
         // Group name label
-        panel.add(JBLabel(AndroidViewBundle.message("dialog.projectFileGroup.groupName.label")), gbc)
+        panel.add(JBLabel(AndroidViewBundle.message("dialog.ProjectFileGroup.GroupName.text")), gbc)
 
         // Group name field
         gbc.gridy++
@@ -70,7 +72,7 @@ class ProjectFileGroupDialog(
         // Patterns section label
         gbc.gridy++
         gbc.insets = JBUI.insets(15, 5, 5, 5)
-        panel.add(JBLabel(AndroidViewBundle.message("dialog.projectFileGroup.patterns.label")), gbc)
+        panel.add(JBLabel(AndroidViewBundle.message("dialog.ProjectFileGroup.Patterns.text")), gbc)
 
         // Patterns table with toolbar
         gbc.gridy++
@@ -90,7 +92,7 @@ class ProjectFileGroupDialog(
         gbc.gridy++
         gbc.fill = GridBagConstraints.HORIZONTAL
         gbc.weighty = 0.0
-        val helpLabel = JBLabel("<html><i>${AndroidViewBundle.message("dialog.projectFileGroup.patterns.help")}</i></html>")
+        val helpLabel = JBLabel("<html><i>${AndroidViewBundle.message("dialog.ProjectFileGroup.Patterns.description")}</i></html>")
         panel.add(helpLabel, gbc)
 
         return panel
@@ -99,8 +101,8 @@ class ProjectFileGroupDialog(
     private fun addPattern() {
         val pattern = JOptionPane.showInputDialog(
             contentPanel,
-            AndroidViewBundle.message("dialog.addPattern.message"),
-            AndroidViewBundle.message("dialog.addPattern.title"),
+            AndroidViewBundle.message("dialog.AddPattern.description"),
+            AndroidViewBundle.message("dialog.AddPattern.text"),
             JOptionPane.PLAIN_MESSAGE
         )
         if (!pattern.isNullOrBlank()) {
@@ -121,7 +123,7 @@ class ProjectFileGroupDialog(
             val currentPattern = patternsTableModel.getPattern(selectedRow)
             val newPattern = JOptionPane.showInputDialog(
                 contentPanel,
-                AndroidViewBundle.message("dialog.editPattern.message"),
+                AndroidViewBundle.message("dialog.EditPattern.description"),
                 currentPattern
             )
             if (!newPattern.isNullOrBlank()) {
@@ -133,11 +135,11 @@ class ProjectFileGroupDialog(
     override fun doValidate(): ValidationInfo? {
         val groupName = groupNameField.text.trim()
         if (groupName.isEmpty()) {
-            return ValidationInfo(AndroidViewBundle.message("dialog.validation.groupNameEmpty"), groupNameField)
+            return ValidationInfo(AndroidViewBundle.message("dialog.Validation.GroupNameEmpty.text"), groupNameField)
         }
 
         if (patternsTableModel.getPatterns().isEmpty()) {
-            return ValidationInfo(AndroidViewBundle.message("dialog.validation.patternsEmpty"), patternsTable)
+            return ValidationInfo(AndroidViewBundle.message("dialog.Validation.PatternsEmpty.text"), patternsTable)
         }
 
         return null
@@ -163,7 +165,7 @@ class ProjectFileGroupDialog(
 
         override fun getColumnCount(): Int = 1
 
-        override fun getColumnName(column: Int): String = AndroidViewBundle.message("dialog.projectFileGroup.table.columnName")
+        override fun getColumnName(column: Int): String = AndroidViewBundle.message("dialog.ProjectFileGroup.Table.ColumnName.text")
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): String = patterns[rowIndex]
 

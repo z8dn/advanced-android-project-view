@@ -1,4 +1,4 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.nodes
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
@@ -9,6 +9,9 @@ import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
+import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
+import com.z8dn.plugins.a2pt.utils.ProjectFileDisplayUtils
 import javax.swing.Icon
 
 /**

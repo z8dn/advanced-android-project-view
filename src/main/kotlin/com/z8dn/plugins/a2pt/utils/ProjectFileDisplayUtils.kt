@@ -1,4 +1,4 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.utils
 
 import com.android.tools.idea.projectsystem.gradle.getGradleIdentityPath
 import com.android.tools.idea.projectsystem.gradle.getGradleProjectPath

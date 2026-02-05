@@ -1,4 +1,7 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.actions
+
+import com.z8dn.plugins.a2pt.AndroidViewBundle
+import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 
 import com.android.tools.idea.navigator.ANDROID_VIEW_ID
 import com.intellij.ide.projectView.ProjectView
@@ -8,7 +11,7 @@ import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.ProjectManager
 
 class ShowBuildDirectoryAction : ToggleAction(
-    { AndroidViewBundle.message("action.ShowBuildDirectoryAction.text") }
+    { AndroidViewBundle.message("action.ProjectView.ShowBuildDirectoryAction.text") }
 ) {
     private val settings = AndroidViewSettings.getInstance()
 
