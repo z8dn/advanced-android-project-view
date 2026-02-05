@@ -3,7 +3,6 @@ package com.z8dn.plugins.a2pt.actions
 import com.z8dn.plugins.a2pt.AndroidViewBundle
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 
-import com.android.tools.idea.navigator.ANDROID_VIEW_ID
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -12,7 +11,7 @@ import com.intellij.openapi.project.ProjectManager
 
 class ShowProjectFilesInModuleAction : ToggleAction(
     { AndroidViewBundle.message("action.ProjectView.ShowProjectFilesInModuleAction.text") }
-) {
+), AndroidViewAction {
     private val settings = AndroidViewSettings.getInstance()
 
     override fun isSelected(e: AnActionEvent): Boolean {
@@ -33,13 +32,8 @@ class ShowProjectFilesInModuleAction : ToggleAction(
     }
 
     override fun update(e: AnActionEvent) {
-        // Only show this action when in Android Project View
-        val project = e.project
-        val isAndroidView = project?.let {
-            ProjectView.getInstance(it).currentProjectViewPane.id == ANDROID_VIEW_ID
-        } ?: false
-        e.presentation.isEnabledAndVisible = isAndroidView
         super.update(e)
+        updateAndroidViewVisibility(e)
     }
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT

@@ -8,8 +8,12 @@ import com.z8dn.plugins.a2pt.AndroidViewBundle
 import org.jetbrains.annotations.ApiStatus.Internal
 
 @Internal
-class CustomizeAndroidTreeViewAction : DumbAwareAction() {
+class CustomizeAndroidTreeViewAction : DumbAwareAction(), AndroidViewAction {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+    override fun update(e: AnActionEvent) {
+        updateAndroidViewVisibility(e)
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         ShowSettingsUtilImpl.showSettingsDialog(
