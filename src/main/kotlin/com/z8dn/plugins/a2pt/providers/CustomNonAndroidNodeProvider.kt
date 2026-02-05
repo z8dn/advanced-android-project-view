@@ -1,4 +1,7 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.providers
+
+import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
+import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
 import com.intellij.ide.projectView.TreeStructureProvider

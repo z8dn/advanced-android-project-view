@@ -1,9 +1,12 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.providers
 
 import com.android.tools.idea.navigator.nodes.AndroidViewProjectNode
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.z8dn.plugins.a2pt.nodes.ProjectFileGroupNode
+import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
+import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 
 /**
  * TreeStructureProvider that adds ProjectFileGroupNode(s) at the project root level

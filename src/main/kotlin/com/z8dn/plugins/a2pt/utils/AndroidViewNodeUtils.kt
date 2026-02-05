@@ -1,4 +1,7 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.utils
+
+import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
+import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager

@@ -1,4 +1,4 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.settings
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent

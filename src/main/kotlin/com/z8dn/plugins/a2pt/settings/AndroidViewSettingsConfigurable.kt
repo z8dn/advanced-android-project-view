@@ -1,4 +1,6 @@
-package com.z8dn.plugins.a2pt
+package com.z8dn.plugins.a2pt.settings
+
+import com.z8dn.plugins.a2pt.AndroidViewBundle
 
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.options.SearchableConfigurable
@@ -26,7 +28,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
     override fun getId(): String = "com.z8dn.plugins.a2pt.settings"
 
-    override fun getDisplayName(): String = AndroidViewBundle.message("settings.displayName")
+    override fun getDisplayName(): String = AndroidViewBundle.message("settings.DisplayName.text")
 
     override fun createComponent(): JComponent {
         val mainPanel = JPanel(GridBagLayout())
@@ -41,8 +43,8 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         gbc.insets = Insets(5, 5, 5, 5)
 
         // Build directory checkbox
-        showBuildDirectoryCheckBox = JBCheckBox(AndroidViewBundle.message("settings.showBuildDirectory")).apply {
-            toolTipText = AndroidViewBundle.message("settings.showBuildDirectory.tooltip")
+        showBuildDirectoryCheckBox = JBCheckBox(AndroidViewBundle.message("settings.ShowBuildDirectory.text")).apply {
+            toolTipText = AndroidViewBundle.message("settings.ShowBuildDirectory.description")
         }
         mainPanel.add(showBuildDirectoryCheckBox, gbc)
 
@@ -60,7 +62,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
     private fun createGroupsTablePanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        panel.border = BorderFactory.createTitledBorder(AndroidViewBundle.message("settings.customFileGroups.border"))
+        panel.border = BorderFactory.createTitledBorder(AndroidViewBundle.message("settings.CustomFileGroups.text"))
 
         groupsTableModel = ProjectFileGroupsTableModel()
         groupsTable = JBTable(groupsTableModel).apply {
@@ -75,7 +77,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         panel.add(decorator.createPanel(), BorderLayout.CENTER)
 
-        val helpLabel = JBLabel("<html><i>${AndroidViewBundle.message("settings.customFileGroups.help")}</i></html>")
+        val helpLabel = JBLabel("<html><i>${AndroidViewBundle.message("settings.CustomFileGroups.description")}</i></html>")
         panel.add(helpLabel, BorderLayout.SOUTH)
 
         return panel
@@ -157,8 +159,8 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         override fun getColumnCount(): Int = 2
 
         override fun getColumnName(column: Int): String = when (column) {
-            0 -> AndroidViewBundle.message("settings.table.columnName.groupName")
-            1 -> AndroidViewBundle.message("settings.table.columnName.patterns")
+            0 -> AndroidViewBundle.message("settings.Table.ColumnName.groupName")
+            1 -> AndroidViewBundle.message("settings.Table.ColumnName.patterns")
             else -> ""
         }
 
