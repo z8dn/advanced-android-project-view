@@ -12,7 +12,7 @@ import com.intellij.openapi.project.ProjectManager
 
 class ShowProjectFilesInModuleAction : ToggleAction(
     { AndroidViewBundle.message("action.ProjectView.ShowProjectFilesInModuleAction.text") }
-) {
+), AndroidViewAction {
     private val settings = AndroidViewSettings.getInstance()
 
     override fun isSelected(e: AnActionEvent): Boolean {
@@ -33,13 +33,8 @@ class ShowProjectFilesInModuleAction : ToggleAction(
     }
 
     override fun update(e: AnActionEvent) {
-        // Only show this action when in Android Project View
-        val project = e.project
-        val isAndroidView = project?.let {
-            ProjectView.getInstance(it).currentProjectViewPane.id == ANDROID_VIEW_ID
-        } ?: false
-        e.presentation.isEnabledAndVisible = isAndroidView
         super.update(e)
+        updateAndroidViewVisibility(e)
     }
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
