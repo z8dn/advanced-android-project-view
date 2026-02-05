@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-02-05
+
+- Changelog update - v0.0.5 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/27
+- Address Qodana issues by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/28
+- Enable settings synchronization by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/29
+- Update plugin version to 0.0.6 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/33
+- Refactor: reorganize package structure by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/34
+- Feature: add Customize Android Tree View action by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/35
+- Refactor action visibility logic using AndroidViewAction interface by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/36
+
 ## [0.0.5] - 2026-02-02
 
 - Changelog update - v0.0.4 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/18
@@ -44,7 +54,8 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.6...HEAD
+[0.0.6]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.2...v0.0.3
