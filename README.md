@@ -1,4 +1,4 @@
-<h1 align="center">Advanced Android Project View (A2PT)</h1></br>
+<h1 align="center">Advanced Android Project Tree (A2PT)</h1></br>
 
 <p align="center">
   <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
@@ -7,7 +7,7 @@
 </p>
 
 <!-- Plugin description -->
-<p><strong>Advanced Android Project View</strong> enhances the Android Studio project view by providing quick access to commonly used directories and files that are normally hidden or difficult to navigate to.</p>
+<p><strong>Advanced Android Project Tree</strong> enhances the Android Studio project view by providing quick access to commonly used directories and files that are normally hidden or difficult to navigate to.</p>
 
 <h3>Features</h3>
 <ul>
@@ -33,7 +33,7 @@ Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced
 ### From JetBrains Marketplace (Recommended)
 1. Open Android Studio/IntelliJ IDEA
 2. Go to **Settings/Preferences** (⌘, on Mac or Ctrl+Alt+S on Windows/Linux) → **Plugins** → **Marketplace**
-3. Search for "Advanced Android Project View"
+3. Search for "Advanced Android Project Tree"
 4. Click **Install** and restart Android Studio/IntelliJ IDEA
 ![img/plugin-marketplace-installation.png](img/plugin-marketplace-installation.png)
 
@@ -55,7 +55,7 @@ Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced
 Alternatively, right-click in the Project View toolbar and select appearance options.
 
 ### Configure Project File Groups
-1. Go to **Settings/Preferences** → **Tools** → **Advanced Android Project View**
+1. Go to **Settings/Preferences** → **Tools** → **Advanced Android Project Tree**
 2. Click **Add** to create a new file group
 3. Enter a group name (e.g., "Documentation", "AI Rules")
    ![img/settings-custom-file-groups.png](img/settings-custom-file-groups.png)
