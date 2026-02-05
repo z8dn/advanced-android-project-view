@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.z8dn.plugins.a2pt</id>
-    <name>Advanced Android Project View</name>
+    <name>Advanced Android Project Tree</name>
     <vendor url="https://z8dn.github.io/">Zayden</vendor>
 
     <depends>com.intellij.modules.platform</depends>
@@ -52,7 +52,7 @@
             <action id="CustomizeAndroidTreeViewAction"
                     class="com.z8dn.plugins.a2pt.actions.CustomizeAndroidTreeViewAction"
                     text="Customize Android Tree View..."
-                    description="Open Advanced Android Project View settings"/>
+                    description="Open Advanced Android Project Tree settings"/>
         </group>
     </actions>
 </idea-plugin>

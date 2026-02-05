@@ -1,6 +1,6 @@
-# Contributing to Advanced Android Project View
+# Contributing to Advanced Android Project Tree
 
-Thank you for your interest in contributing to Advanced Android Project View! We welcome contributions from the community and are grateful for your support.
+Thank you for your interest in contributing to Advanced Android Project Tree! We welcome contributions from the community and are grateful for your support.
 
 ## Table of Contents
 
@@ -347,4 +347,4 @@ If you have questions about contributing:
 
 ---
 
-Thank you for contributing to Advanced Android Project View! 🎉
+Thank you for contributing to Advanced Android Project Tree! 🎉

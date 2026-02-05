@@ -17,7 +17,7 @@ import javax.swing.*
 import javax.swing.table.AbstractTableModel
 
 /**
- * Settings page for Advanced Android Project View.
+ * Settings page for Advanced Android Project Tree.
  */
 class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
