@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-02-05
+
+- Changelog update - `v0.0.6` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/37
+- Update plugin name to 'Advanced Android Project Tree' by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/38
+- Optimize workflows to skip on documentation-only changes by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/40
+- Bump version to 0.0.7 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/39
+- @github-actions[bot] made their first contribution in https://github.com/z8dn/advanced-android-project-view/pull/37
+
 ## [0.0.6] - 2026-02-05
 
 - Changelog update - v0.0.5 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/27
@@ -54,7 +62,8 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.3...v0.0.4
