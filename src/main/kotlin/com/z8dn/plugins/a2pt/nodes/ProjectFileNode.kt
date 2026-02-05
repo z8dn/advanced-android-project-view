@@ -1,7 +1,5 @@
 package com.z8dn.plugins.a2pt.nodes
 
-import com.z8dn.plugins.a2pt.utils.ProjectFileDisplayUtils
-
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode

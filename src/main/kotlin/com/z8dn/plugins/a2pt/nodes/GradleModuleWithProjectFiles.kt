@@ -1,7 +1,5 @@
 package com.z8dn.plugins.a2pt.nodes
 
-import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
-
 import com.android.tools.idea.navigator.nodes.AndroidViewNodeProvider
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
 import com.intellij.ide.projectView.ViewSettings
