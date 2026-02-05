@@ -44,10 +44,15 @@
             <add-to-group group-id="ProjectView.ToolWindow.Appearance.Actions"
                           relative-to-action="ShowBuildFilesInModuleAction"
                           anchor="after"/>
+            <separator/>
             <action id="com.z8dn.plugins.a2pt.ShowBuildDirectoryAction"
                     class="com.z8dn.plugins.a2pt.actions.ShowBuildDirectoryAction"/>
             <action id="com.z8dn.plugins.a2pt.ShowProjectFilesInModuleAction"
                     class="com.z8dn.plugins.a2pt.actions.ShowProjectFilesInModuleAction"/>
+            <action id="CustomizeAndroidTreeViewAction"
+                    class="com.z8dn.plugins.a2pt.actions.CustomizeAndroidTreeViewAction"
+                    text="Customize Android Tree View..."
+                    description="Open Advanced Android Project View settings"/>
         </group>
     </actions>
 </idea-plugin>
