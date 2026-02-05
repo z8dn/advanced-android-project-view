@@ -3,7 +3,6 @@ package com.z8dn.plugins.a2pt.actions
 import com.z8dn.plugins.a2pt.AndroidViewBundle
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 
-import com.android.tools.idea.navigator.ANDROID_VIEW_ID
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
