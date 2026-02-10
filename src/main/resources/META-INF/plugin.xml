@@ -30,6 +30,9 @@
 
         <!-- Tree Structure Provider for adding top-level ProjectFileGroupNode -->
         <treeStructureProvider implementation="com.z8dn.plugins.a2pt.providers.ProjectFilesTreeStructureProvider"/>
+
+        <!-- Zoo Scopes: Makes scopes available in ScopeChooserCombo -->
+        <searchScopesProvider implementation="com.z8dn.plugins.a2pt.scopes.ProjectFileGroupScopeProvider"/>
     </extensions>
 
     <!-- Android View Node Providers -->
