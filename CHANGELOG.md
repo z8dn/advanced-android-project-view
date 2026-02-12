@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-02-12
+
+- Changelog update - `v0.0.7` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/41
+- Add search scope support for custom file groups by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/42
+- Version bump to 0.0.8 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/45
+
 ## [0.0.7] - 2026-02-05
 
 - Changelog update - `v0.0.6` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/37
@@ -62,7 +68,8 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.7...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.8...HEAD
+[0.0.8]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.4...v0.0.5
