@@ -138,8 +138,13 @@ class ProjectFileGroupDialog(
             return ValidationInfo(AndroidViewBundle.message("dialog.Validation.GroupNameEmpty.text"), groupNameField)
         }
 
-        if (patternsTableModel.getPatterns().isEmpty()) {
+        val patterns = patternsTableModel.getPatterns()
+        if (patterns.isEmpty()) {
             return ValidationInfo(AndroidViewBundle.message("dialog.Validation.PatternsEmpty.text"), patternsTable)
+        }
+
+        if (patterns.all { it.startsWith("!") }) {
+            return ValidationInfo(AndroidViewBundle.message("dialog.Validation.NoInclusionPattern.text"), patternsTable)
         }
 
         return null
