@@ -13,7 +13,9 @@ steps:
 
   - label: ":hammer: Build"
     key: build
-    command: "gradle buildPlugin"
+    # buildSearchableOptions launches a full IntelliJ IDE process and requires ~4GB RAM.
+    # Skip it in CI; it only generates marketplace search indexes.
+    command: "gradle buildPlugin -x buildSearchableOptions"
     plugins:
       - docker#v3.5.0:
           image: "gradle:8-jdk21"
@@ -22,7 +24,7 @@ steps:
 
   - label: ":shield: Verify Plugin"
     key: verify
-    command: "gradle verifyPlugin"
+    command: "gradle verifyPlugin -x buildSearchableOptions"
     plugins:
       - docker#v3.5.0:
           image: "gradle:8-jdk21"
