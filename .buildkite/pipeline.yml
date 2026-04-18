@@ -14,10 +14,8 @@ steps:
           image: "gradle:8.13-jdk21"
           volumes:
             - "/tmp/.gradle:/root/.gradle"
-          environment:
-            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
     commands:
-      - ./gradlew buildPlugin
+      - ./gradlew buildPlugin --no-daemon --max-workers=2 -Dkotlin.daemon.jvm.options="-Xmx2g"
       - |
         cd build/distributions
         FILENAME=$$(ls *.zip)
@@ -37,11 +35,9 @@ steps:
           image: "gradle:8.13-jdk21"
           volumes:
             - "/tmp/.gradle:/root/.gradle"
-          environment:
-            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
     commands:
       - |
-        PROPERTIES="$$(./gradlew properties --console=plain -q)"
+        PROPERTIES="$$(./gradlew properties --console=plain -q --no-daemon)"
         VERSION="$$(echo "$$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
         CHANGELOG="$$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
         buildkite-agent meta-data set plugin-version "$$VERSION"
@@ -58,10 +54,8 @@ steps:
           image: "gradle:8.13-jdk21"
           volumes:
             - "/tmp/.gradle:/root/.gradle"
-          environment:
-            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
     commands:
-      - ./gradlew check
+      - ./gradlew check --no-daemon --max-workers=2
     artifact_paths:
       - "build/reports/tests/**/*"
       - "build/reports/kover/report.xml"
@@ -81,10 +75,9 @@ steps:
             - "/tmp/.gradle:/root/.gradle"
             - "/tmp/.pluginVerifier:/tmp/.pluginVerifier"
           environment:
-            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
             - "PLUGIN_VERIFIER_HOME"
     commands:
-      - ./gradlew verifyPlugin -Dplugin.verifier.home.dir=$$PLUGIN_VERIFIER_HOME
+      - ./gradlew verifyPlugin --no-daemon --max-workers=2 -Dplugin.verifier.home.dir=$$PLUGIN_VERIFIER_HOME
     artifact_paths:
       - "build/reports/pluginVerifier/**/*"
 
