@@ -5,9 +5,9 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 plugins {
     id("java") // Java support
     alias(libs.plugins.kotlin) // Kotlin support
-    alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
+    alias(libs.plugins.intellij.platform) // IntelliJ Platform Gradle Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
-    alias(libs.plugins.composeCompiler) // Gradle Compose Compiler Plugin
+    alias(libs.plugins.compose.compiler) // Gradle Compose Compiler Plugin
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -41,11 +41,11 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
     testImplementation(libs.hamcrest)
-    testImplementation(libs.composeuitest)
-    testImplementation(libs.jewelstandalone)
+    testImplementation(libs.compose.ui.test)
+    testImplementation(libs.jewel.standalone)
     // Workaround for running tests on Windows and Linux
     // It provides necessary Skiko runtime native binaries
-    testImplementation(libs.skikoAwtRuntimeAll)
+    testImplementation(libs.skiko.awt.runtime.all)
 
     intellijPlatform {
         androidStudio(providers.gradleProperty("platformVersion"))

@@ -53,7 +53,7 @@ The plugin intercepts IntelliJ's project tree via extension points and injects c
 
 ## Dependencies & Compatibility
 - Kotlin 2.3.0, JDK 21
-- IntelliJ Platform Gradle Plugin 2.10.5
+- IntelliJ Platform Gradle Plugin 2.14.0
 - Target: Android Studio Otter 3 Feature Drop (2025.2.3.9) and later
 - Bundled plugins used: `com.intellij.gradle`, `org.jetbrains.android`, `com.intellij.java`
 - No external runtime dependencies
