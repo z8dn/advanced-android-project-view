@@ -1,13 +1,8 @@
 # Release pipeline — replaces .github/workflows/release.yml
-# Triggered when a GitHub release is published (prereleased or released).
-# Wire this up in Buildkite by creating a pipeline that triggers on tag pushes
-# matching "v*", or call it from a GitHub webhook on release events.
 
 steps:
   - label: ":rocket: Publish Plugin"
     key: publish
-    agents:
-      queue: default
     env:
       PUBLISH_TOKEN: $${PUBLISH_TOKEN?}
       CERTIFICATE_CHAIN: $${CERTIFICATE_CHAIN?}
@@ -15,17 +10,13 @@ steps:
       PRIVATE_KEY_PASSWORD: $${PRIVATE_KEY_PASSWORD?}
       GITHUB_TOKEN: $${GITHUB_TOKEN?}
     plugins:
-      - docker#v5.11.0:
-          image: "gradle:8.13-jdk21"
-          volumes:
-            - "/tmp/.gradle:/root/.gradle"
+      - docker#v3.5.0:
+          image: "gradle:8-jdk21"
           environment:
-            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
-            - "PUBLISH_TOKEN"
-            - "CERTIFICATE_CHAIN"
-            - "PRIVATE_KEY"
-            - "PRIVATE_KEY_PASSWORD"
-            - "GITHUB_TOKEN"
+            - PUBLISH_TOKEN
+            - CERTIFICATE_CHAIN
+            - PRIVATE_KEY
+            - PRIVATE_KEY_PASSWORD
     commands:
       - |
         TAG="$$BUILDKITE_TAG"
@@ -37,32 +28,30 @@ steps:
         CHANGELOG="$$(echo "$$RELEASE_BODY" | sed -e 's/^[[:space:]]*$$//g' -e '/./,$$!d')"
 
         if [ -n "$$CHANGELOG" ]; then
-          ./gradlew patchChangelog --release-note="$$CHANGELOG"
+          gradle patchChangelog --release-note="$$CHANGELOG"
         fi
 
-        ./gradlew publishPlugin
+        gradle publishPlugin
 
         gh release upload "$$TAG" ./build/distributions/*
 
         if [ -n "$$CHANGELOG" ]; then
           BRANCH="changelog-update-$$TAG"
-          LABEL="release changelog"
 
           git config user.email "buildkite@ci"
           git config user.name "Buildkite"
-
           git checkout -b "$$BRANCH"
           git commit -am "Changelog update - $$TAG"
           git push --set-upstream origin "$$BRANCH"
 
-          gh label create "$$LABEL" \
+          gh label create "release changelog" \
             --description "Pull requests with release changelog update" \
             --force || true
 
           gh pr create \
             --title "Changelog update - \`$$TAG\`" \
             --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$$TAG\` version." \
-            --label "$$LABEL" \
+            --label "release changelog" \
             --head "$$BRANCH"
         fi
 
