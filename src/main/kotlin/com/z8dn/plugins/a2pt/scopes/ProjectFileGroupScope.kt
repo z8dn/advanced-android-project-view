@@ -52,10 +52,10 @@ class ProjectFileGroupScope private constructor(
 
     private val myVirtualFiles: Array<VirtualFile> by lazy {
         val allFiles = mutableListOf<VirtualFile>()
-        // Collect files from project
-        if (fileGroup != null) {
+        val fg = fileGroup
+        if (fg != null) {
             // Child scope - filter by specific file group
-            collectFiles(myProject, allFiles) { file -> matchesFileGroup(file, fileGroup) }
+            collectFiles(myProject, allFiles) { file -> matchesFileGroup(file, fg) }
         } else {
             // Parent scope - all project file groups
             collectFiles(myProject, allFiles) { file -> matchesAnyFileGroup(file) }
