@@ -10,7 +10,7 @@ steps:
       PRIVATE_KEY_PASSWORD: $${PRIVATE_KEY_PASSWORD?}
       GITHUB_TOKEN: $${GITHUB_TOKEN?}
     plugins:
-      - docker#v3.5.0:
+      - docker#v5.12.0:
           image: "gradle:8-jdk21"
           environment:
             - PUBLISH_TOKEN

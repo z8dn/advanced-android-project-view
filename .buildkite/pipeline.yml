@@ -5,7 +5,7 @@ steps:
     key: test
     command: "gradle check"
     plugins:
-      - docker#v3.5.0:
+      - docker#v5.12.0:
           image: "gradle:8-jdk21"
     artifact_paths:
       - "build/reports/tests/**/*"
@@ -17,7 +17,7 @@ steps:
     # Skip it in CI; it only generates marketplace search indexes.
     command: "gradle buildPlugin -x buildSearchableOptions"
     plugins:
-      - docker#v3.5.0:
+      - docker#v5.12.0:
           image: "gradle:8-jdk21"
     artifact_paths:
       - "build/distributions/*.zip"
@@ -26,7 +26,7 @@ steps:
     key: verify
     command: "gradle verifyPlugin -x buildSearchableOptions"
     plugins:
-      - docker#v3.5.0:
+      - docker#v5.12.0:
           image: "gradle:8-jdk21"
     artifact_paths:
       - "build/reports/pluginVerifier/**/*"
