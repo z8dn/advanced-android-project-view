@@ -1,7 +1,5 @@
 # Main CI pipeline — replaces .github/workflows/build.yml
 # Triggered on push to main and on pull requests.
-# Skips documentation-only changes via path exclusions configured in the Buildkite UI
-# (or handled by a pre-step filter script).
 
 steps:
   # ─── Build ────────────────────────────────────────────────────────────────
@@ -11,14 +9,20 @@ steps:
       queue: default
     concurrency: 1
     concurrency_group: "build-$$BUILDKITE_PIPELINE_SLUG-$$BUILDKITE_BRANCH-$$BUILDKITE_PULL_REQUEST"
+    plugins:
+      - docker#v5.11.0:
+          image: "gradle:8.13-jdk21"
+          volumes:
+            - "/tmp/.gradle:/root/.gradle"
+          environment:
+            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
     commands:
       - ./gradlew buildPlugin
       - |
         cd build/distributions
-        FILENAME=$(ls *.zip)
+        FILENAME=$$(ls *.zip)
         unzip "$$FILENAME" -d content
-        echo "artifact_name=$${FILENAME%.zip}" | tee -a /tmp/build-meta
-      - buildkite-agent meta-data set artifact-name "$$(grep artifact_name /tmp/build-meta | cut -d= -f2)"
+        buildkite-agent meta-data set artifact-name "$${FILENAME%.zip}"
     artifact_paths:
       - "build/distributions/content/*/*"
 
@@ -28,6 +32,13 @@ steps:
     depends_on: build
     agents:
       queue: default
+    plugins:
+      - docker#v5.11.0:
+          image: "gradle:8.13-jdk21"
+          volumes:
+            - "/tmp/.gradle:/root/.gradle"
+          environment:
+            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
     commands:
       - |
         PROPERTIES="$$(./gradlew properties --console=plain -q)"
@@ -42,6 +53,13 @@ steps:
     depends_on: build
     agents:
       queue: default
+    plugins:
+      - docker#v5.11.0:
+          image: "gradle:8.13-jdk21"
+          volumes:
+            - "/tmp/.gradle:/root/.gradle"
+          environment:
+            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
     commands:
       - ./gradlew check
     artifact_paths:
@@ -55,7 +73,16 @@ steps:
     agents:
       queue: default
     env:
-      PLUGIN_VERIFIER_HOME: ~/.pluginVerifier
+      PLUGIN_VERIFIER_HOME: /tmp/.pluginVerifier
+    plugins:
+      - docker#v5.11.0:
+          image: "gradle:8.13-jdk21"
+          volumes:
+            - "/tmp/.gradle:/root/.gradle"
+            - "/tmp/.pluginVerifier:/tmp/.pluginVerifier"
+          environment:
+            - "GRADLE_OPTS=-Dorg.gradle.daemon=false"
+            - "PLUGIN_VERIFIER_HOME"
     commands:
       - ./gradlew verifyPlugin -Dplugin.verifier.home.dir=$$PLUGIN_VERIFIER_HOME
     artifact_paths:
@@ -82,7 +109,6 @@ steps:
         VERSION="$$(buildkite-agent meta-data get plugin-version)"
         CHANGELOG="$$(buildkite-agent meta-data get plugin-changelog)"
 
-        # Remove existing draft releases for this version
         gh api repos/{owner}/{repo}/releases \
           --jq '.[] | select(.draft == true) | .id' \
           | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
