@@ -9,8 +9,6 @@ steps:
     key: build
     agents:
       queue: default
-    env:
-      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
     concurrency: 1
     concurrency_group: "build-$$BUILDKITE_PIPELINE_SLUG-$$BUILDKITE_BRANCH-$$BUILDKITE_PULL_REQUEST"
     commands:
@@ -30,8 +28,6 @@ steps:
     depends_on: build
     agents:
       queue: default
-    env:
-      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
     commands:
       - |
         PROPERTIES="$$(./gradlew properties --console=plain -q)"
@@ -46,8 +42,6 @@ steps:
     depends_on: build
     agents:
       queue: default
-    env:
-      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
     commands:
       - ./gradlew check
     artifact_paths:
@@ -61,7 +55,6 @@ steps:
     agents:
       queue: default
     env:
-      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
       PLUGIN_VERIFIER_HOME: ~/.pluginVerifier
     commands:
       - ./gradlew verifyPlugin -Dplugin.verifier.home.dir=$$PLUGIN_VERIFIER_HOME
