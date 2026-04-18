@@ -1,0 +1,100 @@
+# Main CI pipeline — replaces .github/workflows/build.yml
+# Triggered on push to main and on pull requests.
+# Skips documentation-only changes via path exclusions configured in the Buildkite UI
+# (or handled by a pre-step filter script).
+
+steps:
+  # ─── Build ────────────────────────────────────────────────────────────────
+  - label: ":hammer: Build"
+    key: build
+    agents:
+      queue: default
+    env:
+      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
+    concurrency: 1
+    concurrency_group: "build-$$BUILDKITE_PIPELINE_SLUG-$$BUILDKITE_BRANCH-$$BUILDKITE_PULL_REQUEST"
+    commands:
+      - ./gradlew buildPlugin
+      - |
+        cd build/distributions
+        FILENAME=$(ls *.zip)
+        unzip "$$FILENAME" -d content
+        echo "artifact_name=$${FILENAME%.zip}" | tee -a /tmp/build-meta
+      - buildkite-agent meta-data set artifact-name "$$(grep artifact_name /tmp/build-meta | cut -d= -f2)"
+    artifact_paths:
+      - "build/distributions/content/*/*"
+
+  # Export version and changelog as metadata for downstream steps
+  - label: ":gear: Export Properties"
+    key: properties
+    depends_on: build
+    agents:
+      queue: default
+    env:
+      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
+    commands:
+      - |
+        PROPERTIES="$$(./gradlew properties --console=plain -q)"
+        VERSION="$$(echo "$$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
+        CHANGELOG="$$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
+        buildkite-agent meta-data set plugin-version "$$VERSION"
+        buildkite-agent meta-data set plugin-changelog "$$CHANGELOG"
+
+  # ─── Test ─────────────────────────────────────────────────────────────────
+  - label: ":test_tube: Test"
+    key: test
+    depends_on: build
+    agents:
+      queue: default
+    env:
+      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
+    commands:
+      - ./gradlew check
+    artifact_paths:
+      - "build/reports/tests/**/*"
+      - "build/reports/kover/report.xml"
+
+  # ─── Verify ───────────────────────────────────────────────────────────────
+  - label: ":shield: Verify Plugin"
+    key: verify
+    depends_on: build
+    agents:
+      queue: default
+    env:
+      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
+      PLUGIN_VERIFIER_HOME: ~/.pluginVerifier
+    commands:
+      - ./gradlew verifyPlugin -Dplugin.verifier.home.dir=$$PLUGIN_VERIFIER_HOME
+    artifact_paths:
+      - "build/reports/pluginVerifier/**/*"
+
+  - wait: ~
+
+  # ─── Release Draft ────────────────────────────────────────────────────────
+  # Only runs on the main branch (not on pull requests).
+  - label: ":github: Create Release Draft"
+    key: release-draft
+    depends_on:
+      - build
+      - properties
+      - test
+      - verify
+    branches: "main"
+    agents:
+      queue: default
+    env:
+      GITHUB_TOKEN: $${GITHUB_TOKEN?}
+    commands:
+      - |
+        VERSION="$$(buildkite-agent meta-data get plugin-version)"
+        CHANGELOG="$$(buildkite-agent meta-data get plugin-changelog)"
+
+        # Remove existing draft releases for this version
+        gh api repos/{owner}/{repo}/releases \
+          --jq '.[] | select(.draft == true) | .id' \
+          | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
+
+        gh release create "v$$VERSION" \
+          --draft \
+          --title "v$$VERSION" \
+          --notes "$$CHANGELOG"

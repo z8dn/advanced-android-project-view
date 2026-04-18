@@ -1,0 +1,33 @@
+# Qodana code quality pipeline — replaces .github/workflows/qodana_code_quality.yml
+# Triggered on pushes to main/releases/* and on pull requests.
+# Skips documentation-only changes (CHANGELOG.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, README.md, img/**).
+
+steps:
+  - label: ":qodana: Qodana Scan"
+    key: qodana
+    agents:
+      queue: default
+    env:
+      QODANA_TOKEN: $${QODANA_TOKEN?}
+      QODANA_ENDPOINT: "https://qodana.cloud"
+    commands:
+      - |
+        # Skip if all changed files are documentation-only
+        CHANGED="$$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only origin/main...HEAD)"
+        NON_DOC="$$(echo "$$CHANGED" | grep -vE '^(CHANGELOG|CONTRIBUTING|CODE_OF_CONDUCT|README)\.md$$' | grep -v '^img/')"
+        if [ -z "$$NON_DOC" ]; then
+          echo "Only documentation changes detected — skipping Qodana scan."
+          exit 0
+        fi
+      - |
+        # Run Qodana via Docker (mirrors the JetBrains/qodana-action behavior)
+        docker run --rm \
+          -v "$$(pwd):/data/project" \
+          -e QODANA_TOKEN="$$QODANA_TOKEN" \
+          -e QODANA_ENDPOINT="$$QODANA_ENDPOINT" \
+          jetbrains/qodana-jvm:2025.3 \
+          --save-report \
+          --results-dir /data/project/build/qodana/results \
+          --report-dir /data/project/build/qodana/report
+    artifact_paths:
+      - "build/qodana/report/**/*"

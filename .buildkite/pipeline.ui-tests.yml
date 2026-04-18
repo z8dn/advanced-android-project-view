@@ -1,0 +1,74 @@
+# UI test pipeline — replaces .github/workflows/run-ui-tests.yml
+# Triggered manually via `buildkite-agent pipeline upload .buildkite/pipeline.ui-tests.yml`
+# or by triggering the pipeline from the Buildkite UI.
+
+steps:
+  # ─── Linux ────────────────────────────────────────────────────────────────
+  - label: ":linux: UI Tests (Linux)"
+    key: ui-test-linux
+    agents:
+      os: linux
+      queue: default
+    env:
+      JAVA_HOME: /usr/lib/jvm/zulu-21-amd64
+      DISPLAY: ":99.0"
+    commands:
+      - Xvfb -ac :99 -screen 0 1920x1080x16 &
+      - ./gradlew runIdeForUiTests &
+      - |
+        # Wait for IDE to be ready (equivalent to url-health-check-action)
+        for i in $$(seq 1 15); do
+          if curl -sf http://127.0.0.1:8082 > /dev/null 2>&1; then
+            echo "IDE is ready"
+            break
+          fi
+          echo "Attempt $$i/15 — waiting 30s..."
+          sleep 30
+        done
+      - ./gradlew test
+    artifact_paths:
+      - "build/reports/tests/**/*"
+
+  # ─── macOS ────────────────────────────────────────────────────────────────
+  - label: ":mac: UI Tests (macOS)"
+    key: ui-test-macos
+    agents:
+      os: macos
+      queue: default
+    env:
+      JAVA_HOME: /Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
+    commands:
+      - ./gradlew runIdeForUiTests &
+      - |
+        for i in $$(seq 1 15); do
+          if curl -sf http://127.0.0.1:8082 > /dev/null 2>&1; then
+            echo "IDE is ready"
+            break
+          fi
+          echo "Attempt $$i/15 — waiting 30s..."
+          sleep 30
+        done
+      - ./gradlew test
+    artifact_paths:
+      - "build/reports/tests/**/*"
+
+  # ─── Windows ──────────────────────────────────────────────────────────────
+  - label: ":windows: UI Tests (Windows)"
+    key: ui-test-windows
+    agents:
+      os: windows
+      queue: default
+    env:
+      JAVA_HOME: "C:\\Program Files\\Zulu\\zulu-21"
+    commands:
+      - start gradlew.bat runIdeForUiTests
+      - |
+        for /L %%i in (1,1,15) do (
+          curl -sf http://127.0.0.1:8082 >nul 2>&1 && (echo IDE is ready & goto :ready)
+          echo Attempt %%i/15 - waiting 30s...
+          timeout /t 30 /nobreak >nul
+        )
+        :ready
+      - gradlew.bat test
+    artifact_paths:
+      - "build/reports/tests/**/*"
