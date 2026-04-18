@@ -41,31 +41,40 @@ object ProjectFileDisplayUtils {
         return projectDisplayName
     }
 
-    /**
-     * Checks if a filename matches a pattern (glob or exact match).
-     * Matching is case-insensitive.
-     *
-     * @param filename The filename to check
-     * @param pattern The pattern to match against (supports glob patterns like *.md)
-     * @return true if the filename matches the pattern
-     */
-    fun matchesPattern(filename: String, pattern: String): Boolean {
-        val filenameLower = filename.lowercase()
+    private fun globMatches(input: String, pattern: String): Boolean {
+        val inputLower = input.lowercase().replace('\\', '/')
         val patternLower = pattern.lowercase()
-
-        // Try glob pattern matching
-        try {
-            val matcher = java.nio.file.FileSystems.getDefault()
-                .getPathMatcher("glob:$patternLower")
-            val path = java.nio.file.FileSystems.getDefault().getPath(filenameLower)
-            if (matcher.matches(path)) {
-                return true
-            }
+        return try {
+            val fs = java.nio.file.FileSystems.getDefault()
+            fs.getPathMatcher("glob:$patternLower").matches(fs.getPath(inputLower))
         } catch (_: Exception) {
-            // Fall through to exact match
+            inputLower == patternLower
         }
+    }
 
-        // Exact match
-        return filenameLower == patternLower
+    fun matchesPattern(filename: String, pattern: String): Boolean {
+        if (pattern.startsWith("!")) return false
+        return globMatches(filename, pattern)
+    }
+
+    /**
+     * Returns true if [filename]/[relativePath] should be included by [patterns].
+     * Gitignore semantics: included if matches any inclusion pattern and no exclusion pattern.
+     * Exclusion patterns are prefixed with `!` (e.g. `!archive/*.md`).
+     * Path patterns (e.g. `docs/*.txt`) are matched against [relativePath].
+     */
+    fun matchesPatterns(filename: String, relativePath: String, patterns: List<String>): Boolean {
+        var included = false
+        for (pattern in patterns) {
+            if (pattern.startsWith("!")) {
+                val p = pattern.removePrefix("!")
+                if (globMatches(filename, p) || globMatches(relativePath, p)) return false
+            } else {
+                if (!included && (globMatches(filename, pattern) || globMatches(relativePath, pattern))) {
+                    included = true
+                }
+            }
+        }
+        return included
     }
 }

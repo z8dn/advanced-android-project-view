@@ -11,6 +11,7 @@ import com.intellij.psi.search.scope.RangeBasedLocalSearchScope
 import com.z8dn.plugins.a2pt.AndroidViewBundle
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
+import com.z8dn.plugins.a2pt.utils.ProjectFileDisplayUtils
 import java.util.Objects
 
 /**
@@ -35,30 +36,18 @@ class ProjectFileGroupScope private constructor(
                 false
             )
         }
+    }
 
-        private fun matchesAnyFileGroup(file: VirtualFile): Boolean {
-            val settings = AndroidViewSettings.getInstance()
-            return settings.projectFileGroups.any { group ->
-                matchesFileGroup(file, group)
-            }
-        }
+    private fun matchesFileGroup(file: VirtualFile, fileGroup: ProjectFileGroup): Boolean {
+        val relativePath = myProject.basePath
+            ?.let { file.path.removePrefix(it).trimStart('/') }
+            ?: file.name
+        return ProjectFileDisplayUtils.matchesPatterns(file.name, relativePath, fileGroup.patterns)
+    }
 
-        private fun matchesFileGroup(file: VirtualFile, fileGroup: ProjectFileGroup): Boolean {
-            return fileGroup.patterns.any { pattern ->
-                matchesPattern(file, pattern)
-            }
-        }
-
-        private fun matchesPattern(file: VirtualFile, pattern: String): Boolean {
-            // Convert glob pattern to regex
-            val regexPattern = pattern
-                .replace(".", "\\.")
-                .replace("*", ".*")
-                .replace("?", ".")
-
-            val regex = Regex(regexPattern, RegexOption.IGNORE_CASE)
-            return regex.matches(file.name) || regex.containsMatchIn(file.path)
-        }
+    private fun matchesAnyFileGroup(file: VirtualFile): Boolean {
+        val settings = AndroidViewSettings.getInstance()
+        return settings.projectFileGroups.any { group -> matchesFileGroup(file, group) }
     }
 
     private val myVirtualFiles: Array<VirtualFile> by lazy {

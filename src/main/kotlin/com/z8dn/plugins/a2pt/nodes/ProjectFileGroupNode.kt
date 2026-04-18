@@ -36,8 +36,10 @@ class ProjectFileGroupNode(
         val psiManager = PsiManager.getInstance(myProject)
 
         for (file in allProjectFiles) {
-            // Only include files that match this group's patterns
-            if (!matchesAnyPattern(file.name, fileGroup.patterns)) {
+            val relativePath = myProject.basePath
+                ?.let { file.path.removePrefix(it).trimStart('/') }
+                ?: file.name
+            if (!ProjectFileDisplayUtils.matchesPatterns(file.name, relativePath, fileGroup.patterns)) {
                 continue
             }
 
@@ -58,43 +60,20 @@ class ProjectFileGroupNode(
         data.setIcon(getGroupIcon())
     }
 
-    /**
-     * Determines the icon for this group based on the patterns.
-     * - If there's only one pattern, use a file-type-specific icon
-     * - If there are multiple patterns, use a generic folder icon
-     */
     private fun getGroupIcon(): Icon {
-        if (fileGroup.patterns.size == 1) {
-            val pattern = fileGroup.patterns[0]
+        val inclusionPatterns = fileGroup.patterns.filter { !it.startsWith("!") }
+        if (inclusionPatterns.size == 1) {
+            val pattern = inclusionPatterns[0]
             val fileTypeManager = FileTypeManager.getInstance()
-
-            // Handle wildcard patterns like "*.md"
             if (pattern.startsWith("*.")) {
-                val extension = pattern.substring(2)
-                val fileType = fileTypeManager.getFileTypeByExtension(extension)
+                val fileType = fileTypeManager.getFileTypeByExtension(pattern.substring(2))
                 return fileType.icon ?: AllIcons.FileTypes.Text
             }
-
-            // Handle exact filename patterns like "LICENSE"
             if (!pattern.contains("*")) {
                 val fileType = fileTypeManager.getFileTypeByFileName(pattern)
                 return fileType.icon ?: AllIcons.FileTypes.Text
             }
         }
-
-        // Default to folder icon for multiple patterns or complex wildcards
         return AllIcons.Nodes.Folder
-    }
-
-    /**
-     * Checks if a filename matches any of the specified patterns.
-     */
-    private fun matchesAnyPattern(filename: String, patterns: List<String>): Boolean {
-        for (pattern in patterns) {
-            if (ProjectFileDisplayUtils.matchesPattern(filename, pattern)) {
-                return true
-            }
-        }
-        return false
     }
 }
