@@ -97,7 +97,8 @@ object AndroidViewNodeUtils {
 
     /**
      * Gets all project files from the entire project that match configured patterns.
-     * Searches all module content roots in the project.
+     * Searches all module content roots, and also directly navigates to directories
+     * indicated by path-based patterns (to support non-Gradle-module folders).
      *
      * @param project The project to search in
      * @return List of (VirtualFile, relativePath) pairs for all matching files
@@ -106,6 +107,11 @@ object AndroidViewNodeUtils {
         val settings = AndroidViewSettings.getInstance()
         val allPatterns = settings.projectFileGroups.flatMap { it.patterns }
         if (allPatterns.isEmpty()) return emptyList()
+
+        // Use only inclusion patterns for global file discovery. Exclusions from one group
+        // must not prevent another group from showing the same file — per-group exclusions
+        // are applied later in ProjectFileGroupNode when each group filters this list.
+        val inclusionPatterns = allPatterns.filter { !it.startsWith("!") }
 
         val projectBaseDir = project.basePath
             ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
@@ -121,7 +127,7 @@ object AndroidViewNodeUtils {
                 for (child in root.children) {
                     if (child.isValid && !child.isDirectory) {
                         val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
-                        if (matchesPatterns(child.name, relativePath, allPatterns)) {
+                        if (matchesPatterns(child.name, relativePath, inclusionPatterns)) {
                             result.add(child to relativePath)
                         }
                     }
@@ -129,6 +135,96 @@ object AndroidViewNodeUtils {
             }
         }
 
+        // Also scan directories pointed to directly by path-based patterns.
+        // This handles non-Gradle-module folders (e.g. a top-level "docs/" folder).
+        val seen = result.mapTo(HashSet()) { it.first }
+        for (entry in getFilesFromPathBasedPatterns(projectBaseDir, inclusionPatterns)) {
+            if (seen.add(entry.first)) {
+                result.add(entry)
+            }
+        }
+
         return result
     }
+
+    /**
+     * For each path-based inclusion pattern (containing '/'), extracts the non-wildcard
+     * directory prefix and navigates there directly from [projectBaseDir], collecting all
+     * files that match the full pattern list. This is decoupled from the module scan.
+     *
+     * e.g. "docs/guide.md" or "docs/glob-pattern" → scans <project>/docs/ directly
+     *      "docs/sub/glob-pattern"                 → scans <project>/docs/sub/ directly
+     *      "docs/glob-recursive"                   → scans <project>/docs/ recursively
+     */
+    private fun getFilesFromPathBasedPatterns(
+        projectBaseDir: VirtualFile,
+        patterns: List<String>
+    ): List<Pair<VirtualFile, String>> {
+        val result = mutableListOf<Pair<VirtualFile, String>>()
+        val dirPrefixes = patterns
+            .filter { !it.startsWith("!") }
+            .mapNotNull { extractDirectoryPrefix(it) }
+            .toSet()
+        for (prefix in dirPrefixes) {
+            val targetDir = resolveDirCaseInsensitive(projectBaseDir, prefix) ?: continue
+            if (!targetDir.isValid || !targetDir.isDirectory) continue
+            scanDirectoryForFiles(targetDir, projectBaseDir, patterns, result)
+        }
+        return result
+    }
+
+    private fun resolveDirCaseInsensitive(base: VirtualFile, relative: String): VirtualFile? {
+        var current = base
+        for (segment in relative.split('/')) {
+            if (segment.isEmpty()) continue
+            current = current.children.firstOrNull {
+                it.isDirectory && it.name.equals(segment, ignoreCase = true)
+            } ?: return null
+        }
+        return current
+    }
+
+    /**
+     * Extracts the non-wildcard directory prefix from a path-based pattern.
+     * Returns null for filename-only patterns (no '/') or patterns whose first
+     * directory segment contains a wildcard.
+     *
+     * e.g. "docs/guide.md"     → "docs"
+     *      "docs/sub/guide.md" → "docs/sub"
+     *      "docs/deep/glob"    → "docs"
+     *      "filename-only"     → null
+     *      "wildcard-dir/file" → null (when dir segment contains glob chars)
+     */
+    private fun extractDirectoryPrefix(pattern: String): String? {
+        if ('/' !in pattern) return null
+        val segments = pattern.split('/')
+        val dirSegments = segments.dropLast(1)
+        val prefix = dirSegments.takeWhile { '*' !in it && '?' !in it }
+        return if (prefix.isEmpty()) null else prefix.joinToString("/")
+    }
+
+    private fun scanDirectoryForFiles(
+        dir: VirtualFile,
+        projectBaseDir: VirtualFile,
+        patterns: List<String>,
+        result: MutableList<Pair<VirtualFile, String>>
+    ) {
+        for (child in dir.children) {
+            if (!child.isValid) continue
+            if (child.isDirectory) {
+                if (child.name !in IGNORED_SCAN_DIRECTORIES) {
+                    scanDirectoryForFiles(child, projectBaseDir, patterns, result)
+                }
+            } else {
+                val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
+                if (matchesPatterns(child.name, relativePath, patterns)) {
+                    result.add(child to relativePath)
+                }
+            }
+        }
+    }
+
+    private val IGNORED_SCAN_DIRECTORIES = setOf(
+        BUILD_DIRECTORY_NAME, ".git", ".gradle", ".idea", "node_modules"
+    )
 }
