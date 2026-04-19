@@ -43,10 +43,13 @@ class ProjectFileGroupNode(
 
             val psiFile = psiManager.findFile(file) ?: continue
 
-            // Find which module contains this file using efficient lookup
-            val module = ModuleUtilCore.findModuleForFile(file, myProject) ?: continue
-
-            val qualifier = ProjectFileDisplayUtils.generateDisplayName(file, module)
+            // Find which module contains this file (may be null for non-module folders)
+            val module = ModuleUtilCore.findModuleForFile(file, myProject)
+            val qualifier = if (module != null) {
+                ProjectFileDisplayUtils.generateDisplayName(file, module)
+            } else {
+                file.parent?.name ?: relativePath
+            }
             result.add(ProjectFileNode(myProject, psiFile, settings, qualifier, 10))
         }
 
