@@ -43,6 +43,19 @@
 
     <!-- Toggle Actions for Android View -->
     <actions>
+        <group id="com.z8dn.plugins.a2pt.IncludeDirectoryGroup"
+               class="com.z8dn.plugins.a2pt.actions.IncludeDirectoryInGroupActionGroup"
+               text="Include Directory in File Group"
+               popup="true">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </group>
+        <group id="com.z8dn.plugins.a2pt.ExcludeDirectoryGroup"
+               class="com.z8dn.plugins.a2pt.actions.ExcludeDirectoryFromGroupActionGroup"
+               text="Exclude Directory from File Group"
+               popup="true">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </group>
+
         <group id="com.z8dn.plugins.a2pt.AppearanceActions">
             <add-to-group group-id="ProjectView.ToolWindow.Appearance.Actions"
                           relative-to-action="ShowBuildFilesInModuleAction"
