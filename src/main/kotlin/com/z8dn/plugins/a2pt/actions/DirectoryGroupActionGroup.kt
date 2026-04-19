@@ -17,7 +17,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VfsUtil
 
-abstract class DirectoryGroupActionGroup(private val isExclusion: Boolean) : DefaultActionGroup() {
+class IncludeDirectoryInGroupActionGroup : DefaultActionGroup() {
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val event = e ?: return EMPTY_ARRAY
@@ -29,36 +29,30 @@ abstract class DirectoryGroupActionGroup(private val isExclusion: Boolean) : Def
         val actions = mutableListOf<AnAction>()
 
         for (group in groups) {
-            actions.add(ApplyPatternAction(project, dir, group, isExclusion))
+            actions.add(AddToGroupAction(project, dir, group))
         }
 
-        if (!isExclusion) {
-            if (groups.isNotEmpty()) actions.add(Separator.getInstance())
-            actions.add(CreateNewGroupAction(project, dir))
-        }
+        if (groups.isNotEmpty()) actions.add(Separator.getInstance())
+        actions.add(CreateNewGroupAction(project, dir))
 
         return actions.toTypedArray()
     }
 
     override fun update(e: AnActionEvent) {
         val dir = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val isDirectory = dir?.isDirectory == true
-        val hasGroups = AndroidViewSettings.getInstance().projectFileGroups.isNotEmpty()
-
-        e.presentation.isEnabledAndVisible = isDirectory && (!isExclusion || hasGroups)
+        e.presentation.isEnabledAndVisible = dir?.isDirectory == true
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-    private class ApplyPatternAction(
+    private class AddToGroupAction(
         private val project: Project,
         private val dir: VirtualFile,
-        private val group: ProjectFileGroup,
-        private val isExclusion: Boolean
+        private val group: ProjectFileGroup
     ) : AnAction(group.groupName) {
 
         override fun actionPerformed(e: AnActionEvent) {
-            val pattern = buildPattern(project, dir, isExclusion) ?: return
+            val pattern = buildPattern(project, dir) ?: return
             group.patterns.add(pattern)
             refreshAllProjects()
         }
@@ -72,7 +66,7 @@ abstract class DirectoryGroupActionGroup(private val isExclusion: Boolean) : Def
     ) : AnAction("New Group...") {
 
         override fun actionPerformed(e: AnActionEvent) {
-            val pattern = buildPattern(project, dir, false) ?: return
+            val pattern = buildPattern(project, dir) ?: return
             val prefilledGroup = ProjectFileGroup(dir.name, mutableListOf(pattern))
             val dialog = ProjectFileGroupDialog(prefilledGroup)
             if (dialog.showAndGet()) {
@@ -85,11 +79,11 @@ abstract class DirectoryGroupActionGroup(private val isExclusion: Boolean) : Def
     }
 }
 
-private fun buildPattern(project: Project, dir: VirtualFile, isExclusion: Boolean): String? {
+private fun buildPattern(project: Project, dir: VirtualFile): String? {
     val base = project.basePath
         ?.let { LocalFileSystem.getInstance().findFileByPath(it) } ?: return null
     val relPath = VfsUtil.getRelativePath(dir, base, '/') ?: dir.name
-    return if (isExclusion) "!$relPath/**" else "$relPath/**"
+    return "$relPath/**"
 }
 
 private fun refreshAllProjects() {
@@ -97,6 +91,3 @@ private fun refreshAllProjects() {
         .filter { !it.isDisposed }
         .forEach { ProjectView.getInstance(it)?.refresh() }
 }
-
-class IncludeDirectoryInGroupActionGroup : DirectoryGroupActionGroup(false)
-class ExcludeDirectoryFromGroupActionGroup : DirectoryGroupActionGroup(true)
