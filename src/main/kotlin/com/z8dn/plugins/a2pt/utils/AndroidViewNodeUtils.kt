@@ -196,7 +196,9 @@ object AndroidViewNodeUtils {
         for (child in dir.children) {
             if (!child.isValid) continue
             if (child.isDirectory) {
-                scanDirectoryForFiles(child, projectBaseDir, patterns, result)
+                if (child.name !in IGNORED_SCAN_DIRECTORIES) {
+                    scanDirectoryForFiles(child, projectBaseDir, patterns, result)
+                }
             } else {
                 val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
                 if (matchesPatterns(child.name, relativePath, patterns)) {
@@ -205,4 +207,8 @@ object AndroidViewNodeUtils {
             }
         }
     }
+
+    private val IGNORED_SCAN_DIRECTORIES = setOf(
+        BUILD_DIRECTORY_NAME, ".git", ".gradle", ".idea", "node_modules"
+    )
 }
