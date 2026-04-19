@@ -108,6 +108,11 @@ object AndroidViewNodeUtils {
         val allPatterns = settings.projectFileGroups.flatMap { it.patterns }
         if (allPatterns.isEmpty()) return emptyList()
 
+        // Use only inclusion patterns for global file discovery. Exclusions from one group
+        // must not prevent another group from showing the same file — per-group exclusions
+        // are applied later in ProjectFileGroupNode when each group filters this list.
+        val inclusionPatterns = allPatterns.filter { !it.startsWith("!") }
+
         val projectBaseDir = project.basePath
             ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
             ?: return emptyList()
@@ -122,7 +127,7 @@ object AndroidViewNodeUtils {
                 for (child in root.children) {
                     if (child.isValid && !child.isDirectory) {
                         val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
-                        if (matchesPatterns(child.name, relativePath, allPatterns)) {
+                        if (matchesPatterns(child.name, relativePath, inclusionPatterns)) {
                             result.add(child to relativePath)
                         }
                     }
@@ -132,9 +137,9 @@ object AndroidViewNodeUtils {
 
         // Also scan directories pointed to directly by path-based patterns.
         // This handles non-Gradle-module folders (e.g. a top-level "docs/" folder).
-        val seenPaths = result.map { it.first.path }.toMutableSet()
-        for (entry in getFilesFromPathBasedPatterns(projectBaseDir, allPatterns)) {
-            if (seenPaths.add(entry.first.path)) {
+        val seen = result.mapTo(HashSet()) { it.first }
+        for (entry in getFilesFromPathBasedPatterns(projectBaseDir, inclusionPatterns)) {
+            if (seen.add(entry.first)) {
                 result.add(entry)
             }
         }
