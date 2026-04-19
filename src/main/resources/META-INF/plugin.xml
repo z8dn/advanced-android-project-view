@@ -45,7 +45,6 @@
     <actions>
         <group id="com.z8dn.plugins.a2pt.IncludeDirectoryGroup"
                class="com.z8dn.plugins.a2pt.actions.IncludeDirectoryInGroupActionGroup"
-               text="Include Directory in File Group"
                popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </group>
@@ -59,9 +58,7 @@
             <action id="com.z8dn.plugins.a2pt.ShowProjectFilesInModuleAction"
                     class="com.z8dn.plugins.a2pt.actions.ShowProjectFilesInModuleAction"/>
             <action id="CustomizeAndroidTreeViewAction"
-                    class="com.z8dn.plugins.a2pt.actions.CustomizeAndroidTreeViewAction"
-                    text="Customize Android Tree View..."
-                    description="Open Advanced Android Project Tree settings"/>
+                    class="com.z8dn.plugins.a2pt.actions.CustomizeAndroidTreeViewAction"/>
         </group>
     </actions>
 </idea-plugin>
