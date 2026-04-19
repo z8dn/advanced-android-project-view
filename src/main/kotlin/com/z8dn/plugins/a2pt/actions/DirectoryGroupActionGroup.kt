@@ -41,15 +41,11 @@ abstract class DirectoryGroupActionGroup(private val isExclusion: Boolean) : Def
     }
 
     override fun update(e: AnActionEvent) {
-        val project = e.project
         val dir = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val isAndroidView = project != null &&
-            ProjectView.getInstance(project).currentViewId == "AndroidView"
         val isDirectory = dir?.isDirectory == true
         val hasGroups = AndroidViewSettings.getInstance().projectFileGroups.isNotEmpty()
 
-        e.presentation.isEnabledAndVisible = isAndroidView && isDirectory &&
-            (!isExclusion || hasGroups)
+        e.presentation.isEnabledAndVisible = isDirectory && (!isExclusion || hasGroups)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
