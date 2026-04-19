@@ -4,9 +4,12 @@ import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VfsUtil
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
+import java.nio.file.Paths
 
 /**
  * Utility functions for finding files and directories in Android Project View nodes.
@@ -19,38 +22,48 @@ object AndroidViewNodeUtils {
     private const val BUILD_DIRECTORY_NAME = "build"
 
     /**
-     * Checks if a filename matches any of the specified patterns.
-     * Supports glob patterns (e.g., "*.md") and exact matches (case-insensitive).
+     * Checks whether a file should be included based on a list of patterns.
+     * Patterns prefixed with ! are exclusions. Patterns containing / are matched
+     * against the relative path; others match the filename only.
+     * A file is included when it matches at least one inclusion pattern AND
+     * does not match any exclusion pattern.
      *
-     * @param filename The filename to check
-     * @param patterns List of patterns to match against
-     * @return true if the filename matches any pattern
+     * @param fileName     The bare filename
+     * @param relativePath The file path relative to the project root
+     * @param patterns     List of patterns (may include !-prefixed exclusions)
+     * @return true if the file should be included
      */
-    private fun matchesAnyPattern(filename: String, patterns: List<String>): Boolean {
-        val fileSystem = FileSystems.getDefault()
-        val filenameLower = filename.lowercase()
+    fun matchesPatterns(fileName: String, relativePath: String, patterns: List<String>): Boolean {
+        val exclusions = patterns.filter { it.startsWith("!") }.map { it.removePrefix("!") }
+        val inclusions = patterns.filter { !it.startsWith("!") }
 
-        for (pattern in patterns) {
-            val patternLower = pattern.lowercase()
+        val included = inclusions.isEmpty() || inclusions.any { matchSingle(it, fileName, relativePath) }
+        val excluded = exclusions.any { matchSingle(it, fileName, relativePath) }
+        return included && !excluded
+    }
 
-            // Try glob pattern matching (case-insensitive)
-            try {
-                val matcher: PathMatcher = fileSystem.getPathMatcher("glob:$patternLower")
-                val path = fileSystem.getPath(filenameLower)
-                if (matcher.matches(path)) {
-                    return true
-                }
-            } catch (_: Exception) {
-                // If glob pattern fails, continue to next pattern
-            }
-
-            // Also check case-insensitive exact match
-            if (filenameLower == patternLower) {
-                return true
-            }
+    /**
+     * Matches a single pattern against a file. Patterns containing `/` are matched
+     * against [relativePath]; all others are matched against [fileName].
+     */
+    private fun matchSingle(pattern: String, fileName: String, relativePath: String): Boolean {
+        val patternLower = pattern.lowercase()
+        return if ('/' in patternLower) {
+            matchGlob(patternLower, relativePath.lowercase()) ||
+                patternLower == relativePath.lowercase()
+        } else {
+            matchGlob(patternLower, fileName.lowercase()) ||
+                patternLower == fileName.lowercase()
         }
+    }
 
-        return false
+    private fun matchGlob(pattern: String, target: String): Boolean {
+        return try {
+            val matcher: PathMatcher = FileSystems.getDefault().getPathMatcher("glob:$pattern")
+            matcher.matches(Paths.get(target))
+        } catch (_: Exception) {
+            false
+        }
     }
 
     /**
@@ -85,17 +98,19 @@ object AndroidViewNodeUtils {
     /**
      * Gets all project files from the entire project that match configured patterns.
      * Searches all module content roots in the project.
-     * This is analogous to getting all build files from the project system.
      *
      * @param project The project to search in
-     * @return List of all matching VirtualFiles across all modules
+     * @return List of (VirtualFile, relativePath) pairs for all matching files
      */
-    fun getAllProjectFilesInProject(project: com.intellij.openapi.project.Project): List<VirtualFile> {
+    fun getAllProjectFilesInProject(project: com.intellij.openapi.project.Project): List<Pair<VirtualFile, String>> {
         val settings = AndroidViewSettings.getInstance()
         val allPatterns = settings.projectFileGroups.flatMap { it.patterns }
         if (allPatterns.isEmpty()) return emptyList()
 
-        val result = mutableListOf<VirtualFile>()
+        val projectBaseDir = project.basePath
+            ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
+            ?: return emptyList()
+        val result = mutableListOf<Pair<VirtualFile, String>>()
         val moduleManager = com.intellij.openapi.module.ModuleManager.getInstance(project)
 
         for (module in moduleManager.modules) {
@@ -104,8 +119,11 @@ object AndroidViewNodeUtils {
             val contentRoots = ModuleRootManager.getInstance(module).contentRoots
             for (root in contentRoots) {
                 for (child in root.children) {
-                    if (child.isValid && !child.isDirectory && matchesAnyPattern(child.name, allPatterns)) {
-                        result.add(child)
+                    if (child.isValid && !child.isDirectory) {
+                        val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
+                        if (matchesPatterns(child.name, relativePath, allPatterns)) {
+                            result.add(child to relativePath)
+                        }
                     }
                 }
             }

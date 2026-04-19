@@ -23,7 +23,7 @@ class ProjectFileGroupNode(
     private val myProject: Project,
     private val settings: ViewSettings,
     private val fileGroup: ProjectFileGroup,
-    private val allProjectFiles: List<VirtualFile>
+    private val allProjectFiles: List<Pair<VirtualFile, String>>
 ) : AbstractTreeNode<String>(myProject, fileGroup.groupName) {
 
     override fun getChildren(): Collection<AbstractTreeNode<*>> {
@@ -35,9 +35,9 @@ class ProjectFileGroupNode(
         val result = mutableListOf<AbstractTreeNode<*>>()
         val psiManager = PsiManager.getInstance(myProject)
 
-        for (file in allProjectFiles) {
+        for ((file, relativePath) in allProjectFiles) {
             // Only include files that match this group's patterns
-            if (!matchesAnyPattern(file.name, fileGroup.patterns)) {
+            if (!AndroidViewNodeUtils.matchesPatterns(file.name, relativePath, fileGroup.patterns)) {
                 continue
             }
 
@@ -60,12 +60,13 @@ class ProjectFileGroupNode(
 
     /**
      * Determines the icon for this group based on the patterns.
-     * - If there's only one pattern, use a file-type-specific icon
-     * - If there are multiple patterns, use a generic folder icon
+     * - If there's only one non-exclusion pattern, use a file-type-specific icon
+     * - Otherwise, use a generic folder icon
      */
     private fun getGroupIcon(): Icon {
-        if (fileGroup.patterns.size == 1) {
-            val pattern = fileGroup.patterns[0]
+        val inclusionPatterns = fileGroup.patterns.filter { !it.startsWith("!") }
+        if (inclusionPatterns.size == 1) {
+            val pattern = inclusionPatterns[0]
             val fileTypeManager = FileTypeManager.getInstance()
 
             // Handle wildcard patterns like "*.md"
@@ -76,7 +77,7 @@ class ProjectFileGroupNode(
             }
 
             // Handle exact filename patterns like "LICENSE"
-            if (!pattern.contains("*")) {
+            if (!pattern.contains("*") && !pattern.contains("/")) {
                 val fileType = fileTypeManager.getFileTypeByFileName(pattern)
                 return fileType.icon ?: AllIcons.FileTypes.Text
             }
@@ -84,17 +85,5 @@ class ProjectFileGroupNode(
 
         // Default to folder icon for multiple patterns or complex wildcards
         return AllIcons.Nodes.Folder
-    }
-
-    /**
-     * Checks if a filename matches any of the specified patterns.
-     */
-    private fun matchesAnyPattern(filename: String, patterns: List<String>): Boolean {
-        for (pattern in patterns) {
-            if (ProjectFileDisplayUtils.matchesPattern(filename, pattern)) {
-                return true
-            }
-        }
-        return false
     }
 }

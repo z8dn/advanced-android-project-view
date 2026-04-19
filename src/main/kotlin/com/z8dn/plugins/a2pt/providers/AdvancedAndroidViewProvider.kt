@@ -99,14 +99,12 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
      * @return List of project files (VirtualFile) belonging to this module
      */
     private fun getProjectFiles(module: Module): List<VirtualFile> {
-        val allProjectFiles = AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
-        return allProjectFiles.filter {
-            ModuleUtilCore.moduleContainsFile(module, it, true) || ModuleUtilCore.moduleContainsFile(
-                module,
-                it,
-                false
-            )
-        }
+        return AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
+            .filter { (file, _) ->
+                ModuleUtilCore.moduleContainsFile(module, file, true) ||
+                ModuleUtilCore.moduleContainsFile(module, file, false)
+            }
+            .map { (file, _) -> file }
     }
 
 }

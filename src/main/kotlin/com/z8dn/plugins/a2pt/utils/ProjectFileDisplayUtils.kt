@@ -41,31 +41,4 @@ object ProjectFileDisplayUtils {
         return projectDisplayName
     }
 
-    /**
-     * Checks if a filename matches a pattern (glob or exact match).
-     * Matching is case-insensitive.
-     *
-     * @param filename The filename to check
-     * @param pattern The pattern to match against (supports glob patterns like *.md)
-     * @return true if the filename matches the pattern
-     */
-    fun matchesPattern(filename: String, pattern: String): Boolean {
-        val filenameLower = filename.lowercase()
-        val patternLower = pattern.lowercase()
-
-        // Try glob pattern matching
-        try {
-            val matcher = java.nio.file.FileSystems.getDefault()
-                .getPathMatcher("glob:$patternLower")
-            val path = java.nio.file.FileSystems.getDefault().getPath(filenameLower)
-            if (matcher.matches(path)) {
-                return true
-            }
-        } catch (_: Exception) {
-            // Fall through to exact match
-        }
-
-        // Exact match
-        return filenameLower == patternLower
-    }
 }
