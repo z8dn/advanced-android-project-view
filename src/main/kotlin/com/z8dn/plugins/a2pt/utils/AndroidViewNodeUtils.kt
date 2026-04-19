@@ -161,11 +161,22 @@ object AndroidViewNodeUtils {
             .mapNotNull { extractDirectoryPrefix(it) }
             .toSet()
         for (prefix in dirPrefixes) {
-            val targetDir = projectBaseDir.findFileByRelativePath(prefix) ?: continue
+            val targetDir = resolveDirCaseInsensitive(projectBaseDir, prefix) ?: continue
             if (!targetDir.isValid || !targetDir.isDirectory) continue
             scanDirectoryForFiles(targetDir, projectBaseDir, patterns, result)
         }
         return result
+    }
+
+    private fun resolveDirCaseInsensitive(base: VirtualFile, relative: String): VirtualFile? {
+        var current = base
+        for (segment in relative.split('/')) {
+            if (segment.isEmpty()) continue
+            current = current.children.firstOrNull {
+                it.isDirectory && it.name.equals(segment, ignoreCase = true)
+            } ?: return null
+        }
+        return current
     }
 
     /**
