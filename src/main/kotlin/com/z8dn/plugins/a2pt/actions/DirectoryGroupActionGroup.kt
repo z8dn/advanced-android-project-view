@@ -82,8 +82,8 @@ class IncludeDirectoryInGroupActionGroup : DefaultActionGroup() {
 private fun buildPattern(project: Project, dir: VirtualFile): String? {
     val base = project.basePath
         ?.let { LocalFileSystem.getInstance().findFileByPath(it) } ?: return null
-    val relPath = VfsUtil.getRelativePath(dir, base, '/') ?: dir.name
-    return "$relPath/**"
+    val relPath = VfsUtil.getRelativePath(dir, base, '/') ?: return null
+    return if (relPath.isEmpty()) "**" else "$relPath/**"
 }
 
 private fun refreshAllProjects() {
