@@ -1,5 +1,6 @@
 package com.z8dn.plugins.a2pt.actions
 
+import com.z8dn.plugins.a2pt.AndroidViewBundle
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroupDialog
@@ -18,6 +19,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VfsUtil
 
 class IncludeDirectoryInGroupActionGroup : DefaultActionGroup() {
+    init {
+        templatePresentation.setText { AndroidViewBundle.message("action.ProjectView.IncludeDirectoryInGroup.text") }
+    }
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val event = e ?: return EMPTY_ARRAY
@@ -63,7 +67,7 @@ class IncludeDirectoryInGroupActionGroup : DefaultActionGroup() {
     private class CreateNewGroupAction(
         private val project: Project,
         private val dir: VirtualFile
-    ) : AnAction("New Group...") {
+    ) : AnAction({ AndroidViewBundle.message("action.CreateNewGroup.text") }) {
 
         override fun actionPerformed(e: AnActionEvent) {
             val pattern = buildPattern(project, dir) ?: return

@@ -8,7 +8,13 @@ import com.z8dn.plugins.a2pt.AndroidViewBundle
 import org.jetbrains.annotations.ApiStatus.Internal
 
 @Internal
-class CustomizeAndroidTreeViewAction : DumbAwareAction(), AndroidViewAction {
+class CustomizeAndroidTreeViewAction : DumbAwareAction(
+    { AndroidViewBundle.message("action.ProjectView.CustomizeAndroidTreeViewAction.text") }
+), AndroidViewAction {
+    init {
+        templatePresentation.description =
+            AndroidViewBundle.message("action.ProjectView.CustomizeAndroidTreeViewAction.description")
+    }
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
