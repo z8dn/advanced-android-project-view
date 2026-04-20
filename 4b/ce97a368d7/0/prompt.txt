@@ -1,0 +1,17 @@
+currently the changelog is just the pr title, how can i make it easier for user to follow
+
+---
+
+these changelogs are supposed to be on What’s New section when publishing the plugin, do u know
+
+---
+
+this changelog isnt supposed to be edit, is it run on ci
+
+---
+
+yes
+
+---
+
+now can we inject something between submitting the plugin to have a user friendly changelog ?
