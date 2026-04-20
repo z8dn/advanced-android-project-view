@@ -1,0 +1,1 @@
+qodana seems broken , Invalid Gradle JDK configuration found. https://github.com/z8dn/advanced-android-project-view/actions/runs/24674743359/job/72155780299?pr=56

@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "cc3b81e5b523",
+  "session_id": "3993e414-bf0b-4ef1-b164-f5f5c8c6daad",
+  "strategy": "manual-commit",
+  "created_at": "2026-04-20T15:29:46.565687Z",
+  "branch": "release/v0.0.9",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "qodana.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "d6d807ae5ec3",
+  "checkpoint_transcript_start": 187,
+  "transcript_lines_at_start": 187,
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 55455,
+    "cache_read_tokens": 462950,
+    "output_tokens": 2177,
+    "api_call_count": 8
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-04-20T15:29:46.556036Z",
+    "agent_lines": 1,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1,
+    "total_lines_changed": 1,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 26,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".idea/AndroidProjectSystem.xml": 6,
+        ".idea/claudeCodeTabState.xml": 20
+      }
+    }
+  ]
+}

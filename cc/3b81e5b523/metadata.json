@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "cc3b81e5b523",
+  "strategy": "manual-commit",
+  "branch": "release/v0.0.9",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "qodana.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cc/3b81e5b523/0/metadata.json",
+      "transcript": "/cc/3b81e5b523/0/full.jsonl",
+      "content_hash": "/cc/3b81e5b523/0/content_hash.txt",
+      "prompt": "/cc/3b81e5b523/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 55455,
+    "cache_read_tokens": 462950,
+    "output_tokens": 2177,
+    "api_call_count": 8
+  }
+}
