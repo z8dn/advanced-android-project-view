@@ -15,3 +15,7 @@ yes
 ---
 
 now can we inject something between submitting the plugin to have a user friendly changelog ?
+
+---
+
+this branch should be rebase to main, not buildkite branch
