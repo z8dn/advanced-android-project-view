@@ -4,6 +4,7 @@
 
 version: "1.0"
 linter: jetbrains/qodana-jvm-community:2025.3
+bootstrap: sed -i 's/project-jdk-name="[^"]*"/project-jdk-name="#JAVA_HOME"/g' .idea/misc.xml
 profile:
   name: qodana.recommended
 include:
