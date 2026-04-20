@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "84d6a877efc5",
+  "session_id": "3993e414-bf0b-4ef1-b164-f5f5c8c6daad",
+  "strategy": "manual-commit",
+  "created_at": "2026-04-20T15:17:37.391193Z",
+  "branch": "release/v0.0.9",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "ac59d9f8e61e",
+  "token_usage": {
+    "input_tokens": 1039,
+    "cache_creation_tokens": 215981,
+    "cache_read_tokens": 1597865,
+    "output_tokens": 20034,
+    "api_call_count": 44
+  },
+  "session_metrics": {
+    "turn_count": 9
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 26,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".idea/AndroidProjectSystem.xml": 6,
+        ".idea/claudeCodeTabState.xml": 20
+      }
+    }
+  ]
+}
