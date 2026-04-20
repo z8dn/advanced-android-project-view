@@ -116,6 +116,7 @@ intellijPlatform {
     }
 
     pluginVerification {
+        freeArgs = listOf("-Xmx1g")
         ides {
             create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         }

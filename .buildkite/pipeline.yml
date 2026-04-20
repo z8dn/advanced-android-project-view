@@ -24,7 +24,7 @@ steps:
 
   - label: ":shield: Verify Plugin"
     key: verify
-    command: "gradle verifyPlugin -x buildSearchableOptions"
+    command: "gradle verifyPlugin -x buildSearchableOptions --no-daemon --max-workers 1"
     plugins:
       - docker#v5.12.0:
           image: "gradle:9-jdk21"
