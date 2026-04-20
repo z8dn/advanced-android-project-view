@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "d5287274f255",
+  "session_id": "3993e414-bf0b-4ef1-b164-f5f5c8c6daad",
+  "strategy": "manual-commit",
+  "created_at": "2026-04-20T15:20:19.131995Z",
+  "branch": "release/v0.0.9",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "gradle.properties"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "ac59d9f8e61e",
+  "token_usage": {
+    "input_tokens": 1040,
+    "cache_creation_tokens": 217173,
+    "cache_read_tokens": 1659190,
+    "output_tokens": 20172,
+    "api_call_count": 45
+  },
+  "session_metrics": {
+    "turn_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-04-20T15:20:19.123302Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 0,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
