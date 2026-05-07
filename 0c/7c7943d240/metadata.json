@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.5.6",
+  "checkpoint_id": "0c7c7943d240",
+  "strategy": "manual-commit",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 2,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/0c/7c7943d240/0/metadata.json",
+      "transcript": "/0c/7c7943d240/0/full.jsonl",
+      "content_hash": "/0c/7c7943d240/0/content_hash.txt",
+      "prompt": "/0c/7c7943d240/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6680,
+    "cache_creation_tokens": 168407,
+    "cache_read_tokens": 1844444,
+    "output_tokens": 27852,
+    "api_call_count": 34
+  }
+}

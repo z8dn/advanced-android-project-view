@@ -1,0 +1,9 @@
+i have fix the buildkite slug to z8dn, can u fix it
+
+---
+
+/superpowers:brainstorming https://github.com/z8dn/advanced-android-project-view/issues/31, how can we achieve this
+
+---
+
+yes do it and open PR

@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.5.6",
+  "checkpoint_id": "0c7c7943d240",
+  "session_id": "7a415430-8daf-4d61-ad97-ee1031f029e8",
+  "strategy": "manual-commit",
+  "created_at": "2026-05-07T16:45:16.649517Z",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 2,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "9232f2aa9577",
+  "token_usage": {
+    "input_tokens": 6680,
+    "cache_creation_tokens": 168407,
+    "cache_read_tokens": 1844444,
+    "output_tokens": 27852,
+    "api_call_count": 34
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 29,
+      "user_lines_removed": 1,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".buildkite/pipeline.yml": 1,
+        ".idea/AndroidProjectSystem.xml": 6,
+        ".idea/claudeCodeTabState.xml": 20,
+        ".junie/memory/language.json": 1,
+        ".junie/memory/memory.version": 1
+      },
+      "user_removed_per_file": {
+        ".buildkite/pipeline.yml": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 29,
+      "agent_lines_removed": 1
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 29,
+      "agent_lines_removed": 1
+    }
+  ]
+}
