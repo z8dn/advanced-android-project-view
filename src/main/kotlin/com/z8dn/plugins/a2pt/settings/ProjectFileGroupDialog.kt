@@ -1,6 +1,8 @@
 package com.z8dn.plugins.a2pt.settings
 
 import com.z8dn.plugins.a2pt.AndroidViewBundle
+import com.z8dn.plugins.a2pt.utils.GroupIconCatalog
+import com.z8dn.plugins.a2pt.utils.GroupIconResolver
 
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
@@ -10,8 +12,10 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.JBUI
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JOptionPane
 import javax.swing.JPanel
@@ -28,6 +32,13 @@ class ProjectFileGroupDialog(
     private val groupNameField: JBTextField = JBTextField()
     private val patternsTable: JBTable
     private val patternsTableModel: PatternsTableModel
+
+    private var currentIconKey: String? = null
+    private val iconPreviewLabel: JBLabel = JBLabel()
+    private val chooseIconButton: JButton =
+        JButton(AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.choose"))
+    private val resetIconButton: JButton =
+        JButton(AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.reset"))
 
     init {
         title = if (existingGroup == null)
@@ -46,9 +57,41 @@ class ProjectFileGroupDialog(
         existingGroup?.let {
             groupNameField.text = it.groupName
             patternsTableModel.setPatterns(it.patterns.toMutableList())
+            currentIconKey = it.iconKey
         }
 
+        chooseIconButton.addActionListener {
+            val dialog = GroupIconPickerDialog(null, currentIconKey)
+            if (dialog.showAndGet()) {
+                currentIconKey = dialog.getSelectedKey()
+                refreshIconRow()
+            }
+        }
+        resetIconButton.addActionListener {
+            currentIconKey = null
+            refreshIconRow()
+        }
+        // Refresh the auto-detect preview as patterns change.
+        patternsTableModel.addTableModelListener {
+            if (currentIconKey == null) refreshIconRow()
+        }
+        refreshIconRow()
+
         init()
+    }
+
+    private fun refreshIconRow() {
+        val entry = GroupIconCatalog.find(currentIconKey)
+        if (entry != null) {
+            iconPreviewLabel.icon = entry.icon
+            iconPreviewLabel.text = entry.displayName
+        } else {
+            iconPreviewLabel.icon =
+                GroupIconResolver.autoDetectFromPatterns(patternsTableModel.getPatterns())
+            iconPreviewLabel.text =
+                AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.autoDetected")
+        }
+        resetIconButton.isEnabled = currentIconKey != null
     }
 
     override fun createCenterPanel(): JComponent {
@@ -68,6 +111,25 @@ class ProjectFileGroupDialog(
         gbc.weightx = 1.0
         groupNameField.preferredSize = Dimension(400, groupNameField.preferredSize.height)
         panel.add(groupNameField, gbc)
+
+        // Icon row label
+        gbc.gridy++
+        gbc.weightx = 0.0
+        gbc.fill = GridBagConstraints.NONE
+        gbc.insets = JBUI.insets(15, 5, 5, 5)
+        panel.add(JBLabel(AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.label")), gbc)
+
+        // Icon row content (preview + buttons)
+        gbc.gridy++
+        gbc.weightx = 1.0
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        gbc.insets = JBUI.insets(5)
+        val iconRow = JPanel(FlowLayout(FlowLayout.LEFT, JBUI.scale(8), 0)).apply {
+            add(iconPreviewLabel)
+            add(chooseIconButton)
+            add(resetIconButton)
+        }
+        panel.add(iconRow, gbc)
 
         // Patterns section label
         gbc.gridy++
@@ -156,7 +218,8 @@ class ProjectFileGroupDialog(
     fun getProjectFileGroup(): ProjectFileGroup {
         return ProjectFileGroup(
             groupName = groupNameField.text.trim(),
-            patterns = patternsTableModel.getPatterns()
+            patterns = patternsTableModel.getPatterns(),
+            iconKey = currentIconKey
         )
     }
 
