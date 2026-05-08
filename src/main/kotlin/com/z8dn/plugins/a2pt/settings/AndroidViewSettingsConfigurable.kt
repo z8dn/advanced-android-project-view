@@ -1,14 +1,18 @@
 package com.z8dn.plugins.a2pt.settings
 
 import com.z8dn.plugins.a2pt.AndroidViewBundle
+import com.z8dn.plugins.a2pt.utils.GroupIconCatalog
 
+import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.table.JBTable
+import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -70,6 +74,12 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
             setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         }
 
+        groupsTable!!.columnModel.getColumn(0).apply {
+            preferredWidth = JBUI.scale(28)
+            maxWidth = JBUI.scale(28)
+            minWidth = JBUI.scale(28)
+        }
+
         val decorator = ToolbarDecorator.createDecorator(groupsTable!!)
             .setAddAction { addGroup() }
             .setRemoveAction { removeGroup() }
@@ -127,7 +137,9 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         // Clear and rebuild the groups list to ensure proper change detection
         settings.projectFileGroups.clear()
         groupsTableModel?.getGroups()?.forEach { group ->
-            settings.projectFileGroups.add(ProjectFileGroup(group.groupName, group.patterns.toMutableList()))
+            settings.projectFileGroups.add(
+                ProjectFileGroup(group.groupName, group.patterns.toMutableList(), group.iconKey)
+            )
         }
 
         // Refresh all open projects to reflect the changes
@@ -144,7 +156,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         showBuildDirectoryCheckBox?.isSelected = settings.showBuildDirectory
         groupsTableModel?.setGroups(settings.projectFileGroups.map {
-            ProjectFileGroup(it.groupName, it.patterns.toMutableList())
+            ProjectFileGroup(it.groupName, it.patterns.toMutableList(), it.iconKey)
         })
     }
 
@@ -156,21 +168,45 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         override fun getRowCount(): Int = groups.size
 
-        override fun getColumnCount(): Int = 2
+        override fun getColumnCount(): Int = 3
 
         override fun getColumnName(column: Int): String = when (column) {
-            0 -> AndroidViewBundle.message("settings.Table.ColumnName.groupName")
-            1 -> AndroidViewBundle.message("settings.Table.ColumnName.patterns")
+            0 -> ""
+            1 -> AndroidViewBundle.message("settings.Table.ColumnName.groupName")
+            2 -> AndroidViewBundle.message("settings.Table.ColumnName.patterns")
             else -> ""
+        }
+
+        override fun getColumnClass(columnIndex: Int): Class<*> = when (columnIndex) {
+            0 -> Icon::class.java
+            else -> String::class.java
         }
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
             val group = groups[rowIndex]
             return when (columnIndex) {
-                0 -> group.groupName
-                1 -> group.patterns.joinToString(", ")
+                0 -> resolveIcon(group)
+                1 -> group.groupName
+                2 -> group.patterns.joinToString(", ")
                 else -> ""
             }
+        }
+
+        private fun resolveIcon(group: ProjectFileGroup): Icon {
+            GroupIconCatalog.find(group.iconKey)?.let { return it.icon }
+            val inclusionPatterns = group.patterns.filter { !it.startsWith("!") }
+            if (inclusionPatterns.size == 1) {
+                val pattern = inclusionPatterns[0]
+                val fileTypeManager = FileTypeManager.getInstance()
+                if (pattern.startsWith("*.")) {
+                    val ext = pattern.substring(2)
+                    return fileTypeManager.getFileTypeByExtension(ext).icon ?: AllIcons.FileTypes.Text
+                }
+                if (!pattern.contains("*") && !pattern.contains("/")) {
+                    return fileTypeManager.getFileTypeByFileName(pattern).icon ?: AllIcons.FileTypes.Text
+                }
+            }
+            return AllIcons.Nodes.Folder
         }
 
         fun addGroup(group: ProjectFileGroup) {
