@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
+import com.z8dn.plugins.a2pt.utils.GroupIconResolver
 import com.z8dn.plugins.a2pt.utils.ProjectFileDisplayUtils
 import javax.swing.Icon
 
@@ -61,32 +62,27 @@ class ProjectFileGroupNode(
         data.setIcon(getGroupIcon())
     }
 
-    /**
-     * Determines the icon for this group based on the patterns.
-     * - If there's only one non-exclusion pattern, use a file-type-specific icon
-     * - Otherwise, use a generic folder icon
-     */
-    private fun getGroupIcon(): Icon {
+    private fun getGroupIcon(): Icon =
+        GroupIconResolver.resolve(fileGroup.iconKey, ::autoDetectIcon)
+
+    private fun autoDetectIcon(): Icon {
         val inclusionPatterns = fileGroup.patterns.filter { !it.startsWith("!") }
         if (inclusionPatterns.size == 1) {
             val pattern = inclusionPatterns[0]
             val fileTypeManager = FileTypeManager.getInstance()
 
-            // Handle wildcard patterns like "*.md"
             if (pattern.startsWith("*.")) {
                 val extension = pattern.substring(2)
                 val fileType = fileTypeManager.getFileTypeByExtension(extension)
                 return fileType.icon ?: AllIcons.FileTypes.Text
             }
 
-            // Handle exact filename patterns like "LICENSE"
             if (!pattern.contains("*") && !pattern.contains("/")) {
                 val fileType = fileTypeManager.getFileTypeByFileName(pattern)
                 return fileType.icon ?: AllIcons.FileTypes.Text
             }
         }
 
-        // Default to folder icon for multiple patterns or complex wildcards
         return AllIcons.Nodes.Folder
     }
 }
