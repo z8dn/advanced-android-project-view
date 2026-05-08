@@ -1,10 +1,8 @@
 package com.z8dn.plugins.a2pt.nodes
 
-import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -13,7 +11,6 @@ import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 import com.z8dn.plugins.a2pt.utils.GroupIconResolver
 import com.z8dn.plugins.a2pt.utils.ProjectFileDisplayUtils
-import javax.swing.Icon
 
 /**
  * A top-level group node that displays project files matching a specific ProjectFileGroup.
@@ -59,30 +56,6 @@ class ProjectFileGroupNode(
 
     override fun update(data: PresentationData) {
         data.presentableText = fileGroup.groupName
-        data.setIcon(getGroupIcon())
-    }
-
-    private fun getGroupIcon(): Icon =
-        GroupIconResolver.resolve(fileGroup.iconKey, ::autoDetectIcon)
-
-    private fun autoDetectIcon(): Icon {
-        val inclusionPatterns = fileGroup.patterns.filter { !it.startsWith("!") }
-        if (inclusionPatterns.size == 1) {
-            val pattern = inclusionPatterns[0]
-            val fileTypeManager = FileTypeManager.getInstance()
-
-            if (pattern.startsWith("*.")) {
-                val extension = pattern.substring(2)
-                val fileType = fileTypeManager.getFileTypeByExtension(extension)
-                return fileType.icon ?: AllIcons.FileTypes.Text
-            }
-
-            if (!pattern.contains("*") && !pattern.contains("/")) {
-                val fileType = fileTypeManager.getFileTypeByFileName(pattern)
-                return fileType.icon ?: AllIcons.FileTypes.Text
-            }
-        }
-
-        return AllIcons.Nodes.Folder
+        data.setIcon(GroupIconResolver.resolve(fileGroup.iconKey, fileGroup.patterns))
     }
 }

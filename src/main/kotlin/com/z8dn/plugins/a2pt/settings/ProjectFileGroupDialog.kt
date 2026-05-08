@@ -2,8 +2,8 @@ package com.z8dn.plugins.a2pt.settings
 
 import com.z8dn.plugins.a2pt.AndroidViewBundle
 import com.z8dn.plugins.a2pt.utils.GroupIconCatalog
+import com.z8dn.plugins.a2pt.utils.GroupIconResolver
 
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.ToolbarDecorator
@@ -71,6 +71,10 @@ class ProjectFileGroupDialog(
             currentIconKey = null
             refreshIconRow()
         }
+        // Refresh the auto-detect preview as patterns change.
+        patternsTableModel.addTableModelListener {
+            if (currentIconKey == null) refreshIconRow()
+        }
         refreshIconRow()
 
         init()
@@ -82,7 +86,8 @@ class ProjectFileGroupDialog(
             iconPreviewLabel.icon = entry.icon
             iconPreviewLabel.text = entry.displayName
         } else {
-            iconPreviewLabel.icon = AllIcons.Nodes.Folder
+            iconPreviewLabel.icon =
+                GroupIconResolver.autoDetectFromPatterns(patternsTableModel.getPatterns())
             iconPreviewLabel.text =
                 AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.autoDetected")
         }

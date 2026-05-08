@@ -1,11 +1,9 @@
 package com.z8dn.plugins.a2pt.settings
 
 import com.z8dn.plugins.a2pt.AndroidViewBundle
-import com.z8dn.plugins.a2pt.utils.GroupIconCatalog
+import com.z8dn.plugins.a2pt.utils.GroupIconResolver
 
-import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.ProjectView
-import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.ToolbarDecorator
@@ -192,22 +190,8 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
             }
         }
 
-        private fun resolveIcon(group: ProjectFileGroup): Icon {
-            GroupIconCatalog.find(group.iconKey)?.let { return it.icon }
-            val inclusionPatterns = group.patterns.filter { !it.startsWith("!") }
-            if (inclusionPatterns.size == 1) {
-                val pattern = inclusionPatterns[0]
-                val fileTypeManager = FileTypeManager.getInstance()
-                if (pattern.startsWith("*.")) {
-                    val ext = pattern.substring(2)
-                    return fileTypeManager.getFileTypeByExtension(ext).icon ?: AllIcons.FileTypes.Text
-                }
-                if (!pattern.contains("*") && !pattern.contains("/")) {
-                    return fileTypeManager.getFileTypeByFileName(pattern).icon ?: AllIcons.FileTypes.Text
-                }
-            }
-            return AllIcons.Nodes.Folder
-        }
+        private fun resolveIcon(group: ProjectFileGroup): Icon =
+            GroupIconResolver.resolve(group.iconKey, group.patterns)
 
         fun addGroup(group: ProjectFileGroup) {
             groups.add(group)
