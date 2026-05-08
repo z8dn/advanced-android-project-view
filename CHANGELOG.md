@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Custom icons for project file groups: pick from a curated set of IntelliJ icons in the Edit File Group dialog. Falls back to the existing auto-detection when no icon is selected. ([#31](https://github.com/z8dn/advanced-android-project-view/issues/31))
+
 ## [0.0.8] - 2026-02-12
 
 - Changelog update - `v0.0.7` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/41
