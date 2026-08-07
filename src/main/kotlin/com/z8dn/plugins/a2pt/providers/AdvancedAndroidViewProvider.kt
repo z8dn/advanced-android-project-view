@@ -93,13 +93,18 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
 
     /**
      * Gets all project files for a module, following the getBuildFiles pattern.
-     * Gets all project files from the entire project, then filters to those contained in this module.
+     * Gets all project files from the entire project, then keeps those some group actually
+     * claims and that are contained in this module.
      *
      * @param module The module to filter files for
      * @return List of project files (VirtualFile) belonging to this module
      */
     private fun getProjectFiles(module: Module): List<VirtualFile> {
+        val groups = AndroidViewSettings.getInstance().projectFileGroups
         return AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
+            .filter { (file, relativePath) ->
+                AndroidViewNodeUtils.matchesAnyGroup(file.name, relativePath, groups)
+            }
             .filter { (file, _) ->
                 ModuleUtilCore.moduleContainsFile(module, file, true) ||
                 ModuleUtilCore.moduleContainsFile(module, file, false)

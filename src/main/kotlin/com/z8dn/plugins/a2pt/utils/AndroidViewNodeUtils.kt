@@ -1,6 +1,7 @@
 package com.z8dn.plugins.a2pt.utils
 
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
+import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -54,6 +55,21 @@ object AndroidViewNodeUtils {
      */
     fun matchesSinglePattern(fileName: String, relativePath: String, pattern: String): Boolean =
         matchSingle(pattern, fileName, relativePath)
+
+    /**
+     * Checks whether any group actually claims this file, applying each group's full pattern
+     * list — exclusions included.
+     *
+     * [collectMatchingFiles] deliberately drops exclusions, because discovery is shared across
+     * groups. Whoever consumes that pool must reapply them, or a `!` pattern has no effect.
+     *
+     * @param groups the groups to test against, each with its complete pattern list
+     */
+    fun matchesAnyGroup(
+        fileName: String,
+        relativePath: String,
+        groups: List<ProjectFileGroup>
+    ): Boolean = groups.any { matchesPatterns(fileName, relativePath, it.patterns) }
 
     /**
      * Checks whether [pattern] compiles as a glob. A pattern that does not compile can

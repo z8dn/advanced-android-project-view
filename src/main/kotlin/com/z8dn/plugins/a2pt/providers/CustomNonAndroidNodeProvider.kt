@@ -1,6 +1,7 @@
 package com.z8dn.plugins.a2pt.providers
 
 import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
+import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
@@ -57,10 +58,15 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
 
     /**
      * Gets all project files for a module.
-     * Filters project files from the entire project to those contained in this module.
+     * Filters project files from the entire project to those some group actually claims and
+     * that are contained in this module.
      */
     private fun getProjectFiles(module: Module): List<VirtualFile> {
+        val groups = AndroidViewSettings.getInstance().projectFileGroups
         return AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
+            .filter { (file, relativePath) ->
+                AndroidViewNodeUtils.matchesAnyGroup(file.name, relativePath, groups)
+            }
             .filter { (file, _) ->
                 ModuleUtilCore.moduleContainsFile(module, file, true) ||
                 ModuleUtilCore.moduleContainsFile(module, file, false)
