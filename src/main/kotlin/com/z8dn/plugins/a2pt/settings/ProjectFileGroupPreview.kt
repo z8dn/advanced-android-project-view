@@ -21,7 +21,10 @@ enum class PatternKind {
     NEGATION,
 
     /** A pattern that does not compile as a glob, so it can never match anything. */
-    INVALID
+    INVALID,
+
+    /** An empty row — the dialog's `+` adds one before the user has typed anything. */
+    BLANK
 }
 
 /**
@@ -100,7 +103,7 @@ object ProjectFileGroupPreview {
         draftPatterns: List<String>,
         siblingInclusions: List<String>
     ): PreviewResult {
-        val draftInclusions = draftPatterns.filter { !it.startsWith("!") }
+        val draftInclusions = draftPatterns.filter { !it.startsWith("!") && it.isNotBlank() }
         if (draftInclusions.isEmpty()) {
             // Nothing can be included, but the patterns still deserve their per-row verdict.
             return PreviewResult(emptyList(), 0, 0, computeStats(draftPatterns, emptyList()), false)
@@ -180,6 +183,9 @@ object ProjectFileGroupPreview {
             val isExclusion = pattern.startsWith("!")
             val body = pattern.removePrefix("!")
 
+            if (body.isBlank()) {
+                return@map PatternStat(pattern, null, PatternKind.BLANK)
+            }
             if (!AndroidViewNodeUtils.isValidGlob(body)) {
                 return@map PatternStat(pattern, null, PatternKind.INVALID)
             }

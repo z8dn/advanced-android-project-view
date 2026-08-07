@@ -105,6 +105,19 @@ class ProjectFileGroupPreviewTest {
     }
 
     @Test
+    fun `a blank row is BLANK rather than EMPTY or INVALID`() {
+        // The dialog's "+" adds an empty row; it must not be flagged before anything is typed,
+        // and it must still occupy a slot so stats stay index-aligned with the table.
+        val stats = ProjectFileGroupPreview.computeStats(listOf("*.md", "", "   "), pool)
+
+        assertEquals(3, stats.size)
+        assertEquals(PatternKind.MATCHED, stats[0].kind)
+        assertEquals(PatternKind.BLANK, stats[1].kind)
+        assertEquals(PatternKind.BLANK, stats[2].kind)
+        assertNull(stats[1].count)
+    }
+
+    @Test
     fun `an empty pool makes every valid inclusion EMPTY`() {
         val stats = ProjectFileGroupPreview.computeStats(listOf("*.md", "!*.draft"), emptyList())
 

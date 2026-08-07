@@ -4,7 +4,9 @@ import com.z8dn.plugins.a2pt.AndroidViewBundle
 
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.ide.impl.ProjectUtil
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
@@ -83,8 +85,24 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         return panel
     }
 
+    /**
+     * This is an application-level configurable, so no project is in scope. The preview needs
+     * one to scan; fall back to any open project rather than showing nothing.
+     */
+    private fun previewProject(): Project? =
+        ProjectUtil.getActiveProject()?.takeIf { !it.isDisposed }
+            ?: ProjectManager.getInstance().openProjects.firstOrNull { !it.isDisposed }
+
+    /**
+     * Siblings come from the table model rather than [AndroidViewSettings]: the draft state is
+     * what OK will actually save, so it is what the preview must be exact against.
+     */
+    private fun siblingGroups(excludingRow: Int = -1): List<ProjectFileGroup> =
+        groupsTableModel?.getGroups().orEmpty()
+            .filterIndexed { index, _ -> index != excludingRow }
+
     private fun addGroup() {
-        val dialog = ProjectFileGroupDialog()
+        val dialog = ProjectFileGroupDialog(previewProject(), null, siblingGroups())
         if (dialog.showAndGet()) {
             groupsTableModel?.addGroup(dialog.getProjectFileGroup())
         }
@@ -101,7 +119,11 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         val selectedRow = groupsTable?.selectedRow
         if (selectedRow != null && selectedRow >= 0) {
             val currentGroup = groupsTableModel?.getGroup(selectedRow) ?: return
-            val dialog = ProjectFileGroupDialog(currentGroup)
+            val dialog = ProjectFileGroupDialog(
+                previewProject(),
+                currentGroup,
+                siblingGroups(excludingRow = selectedRow)
+            )
             if (dialog.showAndGet()) {
                 groupsTableModel?.updateGroup(selectedRow, dialog.getProjectFileGroup())
             }
