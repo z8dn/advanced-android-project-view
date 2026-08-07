@@ -3,6 +3,7 @@ package com.z8dn.plugins.a2pt.utils
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -10,6 +11,8 @@ import com.intellij.openapi.vfs.VfsUtil
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
 import java.nio.file.Paths
+import java.util.Optional
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Utility functions for finding files and directories in Android Project View nodes.
@@ -45,7 +48,22 @@ object AndroidViewNodeUtils {
     /**
      * Matches a single pattern against a file. Patterns containing `/` are matched
      * against [relativePath]; all others are matched against [fileName].
+     *
+     * Exposed for the file group preview, which needs a per-pattern match count.
+     * The pattern must already have any leading `!` stripped by the caller.
      */
+    fun matchesSinglePattern(fileName: String, relativePath: String, pattern: String): Boolean =
+        matchSingle(pattern, fileName, relativePath)
+
+    /**
+     * Checks whether [pattern] compiles as a glob. A pattern that does not compile can
+     * never match a file, which is otherwise indistinguishable from one that simply
+     * matches nothing — the preview reports the two differently.
+     *
+     * The leading `!` of an exclusion must be stripped by the caller.
+     */
+    fun isValidGlob(pattern: String): Boolean = compileMatcher(pattern.lowercase()) != null
+
     private fun matchSingle(pattern: String, fileName: String, relativePath: String): Boolean {
         val patternLower = pattern.lowercase()
         return if ('/' in patternLower) {
@@ -57,9 +75,28 @@ object AndroidViewNodeUtils {
         }
     }
 
+    /**
+     * Compiled globs, keyed by the lowercased pattern. Matching happens once per file per
+     * pattern while the tree is built and on every keystroke in the preview, so compiling
+     * a fresh [PathMatcher] each time is wasteful.
+     *
+     * A pattern that fails to compile caches [Optional.empty] rather than null —
+     * [ConcurrentHashMap] forbids null values and `computeIfAbsent` would throw.
+     */
+    private val matcherCache = ConcurrentHashMap<String, Optional<PathMatcher>>()
+
+    private fun compileMatcher(lowercasePattern: String): PathMatcher? =
+        matcherCache.computeIfAbsent(lowercasePattern) { pattern ->
+            try {
+                Optional.of(FileSystems.getDefault().getPathMatcher("glob:$pattern"))
+            } catch (_: Exception) {
+                Optional.empty()
+            }
+        }.orElse(null)
+
     private fun matchGlob(pattern: String, target: String): Boolean {
+        val matcher = compileMatcher(pattern) ?: return false
         return try {
-            val matcher: PathMatcher = FileSystems.getDefault().getPathMatcher("glob:$pattern")
             matcher.matches(Paths.get(target))
         } catch (_: Exception) {
             false
@@ -96,22 +133,35 @@ object AndroidViewNodeUtils {
     }
 
     /**
-     * Gets all project files from the entire project that match configured patterns.
-     * Searches all module content roots, and also directly navigates to directories
-     * indicated by path-based patterns (to support non-Gradle-module folders).
+     * Gets all project files from the entire project that match configured patterns,
+     * using the union of every group's patterns. See [collectMatchingFiles].
      *
      * @param project The project to search in
      * @return List of (VirtualFile, relativePath) pairs for all matching files
      */
-    fun getAllProjectFilesInProject(project: com.intellij.openapi.project.Project): List<Pair<VirtualFile, String>> {
+    fun getAllProjectFilesInProject(project: Project): List<Pair<VirtualFile, String>> {
         val settings = AndroidViewSettings.getInstance()
-        val allPatterns = settings.projectFileGroups.flatMap { it.patterns }
-        if (allPatterns.isEmpty()) return emptyList()
+        return collectMatchingFiles(project, settings.projectFileGroups.flatMap { it.patterns })
+    }
 
-        // Use only inclusion patterns for global file discovery. Exclusions from one group
-        // must not prevent another group from showing the same file — per-group exclusions
-        // are applied later in ProjectFileGroupNode when each group filters this list.
-        val inclusionPatterns = allPatterns.filter { !it.startsWith("!") }
+    /**
+     * The candidate pool for a given pattern union: every file reachable from a module
+     * content root or from a path-based pattern's directory prefix that matches at least
+     * one inclusion pattern.
+     *
+     * Exclusions in [patterns] are ignored here on purpose. Discovery is shared across all
+     * groups, so one group's `!` must not hide a file another group includes — per-group
+     * exclusions are applied downstream by whoever filters this list.
+     *
+     * Must be called inside a read action: this touches the VFS.
+     *
+     * @return List of (VirtualFile, relativePath) pairs
+     */
+    fun collectMatchingFiles(project: Project, patterns: List<String>): List<Pair<VirtualFile, String>> {
+        if (patterns.isEmpty()) return emptyList()
+
+        val inclusionPatterns = patterns.filter { !it.startsWith("!") }
+        if (inclusionPatterns.isEmpty()) return emptyList()
 
         val projectBaseDir = project.basePath
             ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
