@@ -121,15 +121,20 @@ steps:
     commands:
       - buildkite-agent artifact download "build/distributions/*.zip" .
       - |
-        # Point the verifier at the artifact the Build step produced and exclude
-        # buildPlugin, so this step neither recompiles nor starts a Kotlin
-        # daemon. Three JVMs at once is what previously exhausted the agent and
-        # showed up as "Gradle build daemon disappeared unexpectedly".
-        ARCHIVE="$$(ls build/distributions/*.zip | head -1)"
-        echo "Verifying $$ARCHIVE"
+        # Reuse the artifact the Build step produced instead of recompiling.
+        # buildPlugin's archiveFile — which is what verifyPlugin's own
+        # archiveFile defaults to — resolves to build/distributions/<name>-<version>.zip,
+        # exactly where the download above lands. So excluding buildPlugin is
+        # safe: the @InputFile already exists at the path the convention points
+        # to, and Gradle only needs it present at execution time.
+        #
+        # Skipping the rebuild is what keeps this step inside the agent's memory:
+        # no compile means no Kotlin daemon, so only the Gradle daemon and the
+        # forked verifier are live. Three JVMs at once is what used to exhaust
+        # the agent and surface as "Gradle build daemon disappeared unexpectedly".
+        ls -la build/distributions/
 
         gradle verifyPlugin \
-          -PverifyArchive="$$ARCHIVE" \
           -x buildPlugin \
           -x buildSearchableOptions \
           --no-daemon --max-workers 1 \

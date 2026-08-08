@@ -132,33 +132,4 @@ tasks {
     publishPlugin {
         dependsOn(patchChangelog)
     }
-
-    test {
-        // Tests fork their own JVM and the IntelliJ Platform test fixture is
-        // heavy. With no explicit heap this inherits a quarter of physical RAM,
-        // which leaves too little for the Gradle daemon compiling alongside it
-        // and gets the daemon OOM-killed on a small CI agent.
-        maxHeapSize = "1g"
-    }
-
-    verifyPlugin {
-        // VerifyPluginTask is a JavaExec and forks its own JVM. With no explicit
-        // heap it inherits the JVM default of a quarter of physical RAM, which is
-        // not enough to load Android Studio on a small CI agent.
-        //
-        // Do not set this through intellijPlatform.pluginVerification.freeArgs —
-        // those are appended to the verifier's own CLI arguments rather than the
-        // JVM's, which corrupts the argument list (see 4f257bd).
-        maxHeapSize = "1536m"
-
-        // CI builds the plugin in an earlier step and downloads the artifact, so
-        // let the verifier point at a prebuilt archive. archiveFile's convention
-        // is buildPlugin's output provider, which is what gives this task its
-        // implicit dependency on buildPlugin; replacing it with a plain path
-        // drops that edge, so `-x buildPlugin` skips the compile entirely.
-        val prebuiltArchive = providers.gradleProperty("verifyArchive")
-        if (prebuiltArchive.isPresent) {
-            archiveFile = layout.projectDirectory.file(prebuiltArchive.get())
-        }
-    }
 }
