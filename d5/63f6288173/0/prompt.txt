@@ -1,0 +1,1 @@
+can u revert the changes in @build.gradle.kts and @gradle.properties, except the add of platformType

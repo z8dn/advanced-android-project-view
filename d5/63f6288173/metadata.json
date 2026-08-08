@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "d563f6288173",
+  "strategy": "manual-commit",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".buildkite/pipeline.yml",
+    "build.gradle.kts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d5/63f6288173/0/metadata.json",
+      "transcript": "/d5/63f6288173/0/full.jsonl",
+      "compact_transcript": "/d5/63f6288173/0/transcript.jsonl",
+      "content_hash": "/d5/63f6288173/0/content_hash.txt",
+      "prompt": "/d5/63f6288173/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 19223,
+    "cache_read_tokens": 2372727,
+    "output_tokens": 11336,
+    "api_call_count": 10
+  }
+}
