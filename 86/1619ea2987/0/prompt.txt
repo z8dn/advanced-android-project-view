@@ -1,0 +1,1 @@
+this seems to be only for CI. Can we introduce a CI-only gradle properties for that ? I dont want to affect local config to maxheap as 1g
