@@ -1,0 +1,13 @@
+it works, but what is the buildkite-agent pipeline upload .buildkite/pipeline.yml step
+
+---
+
+i see. Is this the idiomatic way to do buildkite in github ?
+
+---
+
+I see, can we have 1 pipeline only ?
+
+---
+
+continue

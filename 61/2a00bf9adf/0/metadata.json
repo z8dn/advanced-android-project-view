@@ -1,0 +1,90 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "612a00bf9adf",
+  "session_id": "b6074e5e-37c1-4036-af97-73d227a984c2",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-08T08:41:10.836856Z",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "build.gradle.kts",
+    ".buildkite/pipeline.yml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "14c1035e0319",
+  "checkpoint_transcript_start": 412,
+  "transcript_lines_at_start": 412,
+  "compact_transcript_start": 89,
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 167420,
+    "cache_read_tokens": 1828040,
+    "output_tokens": 22150,
+    "api_call_count": 13
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01CQdqd6axuTELQ4LxxN6LPu",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:brainstorming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "14c1035e0319",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 50,
+        "end": 51,
+        "entry_ids": [
+          "71aa5b31-ade0-4ef9-8a43-34c5a7655ff7"
+        ],
+        "tool_use_id": "toolu_01CQdqd6axuTELQ4LxxN6LPu"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01CQdqd6axuTELQ4LxxN6LPu"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:brainstorming",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-08T08:41:10.779535Z",
+    "agent_lines": 220,
+    "agent_removed": 33,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 220,
+    "total_lines_changed": 433,
+    "agent_percentage": 58.429561200923786,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 28,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".idea/AndroidProjectSystem.xml": 6,
+        ".idea/claudeCodeTabState.xml": 20,
+        ".junie/memory/language.json": 1,
+        ".junie/memory/memory.version": 1
+      }
+    }
+  ]
+}
