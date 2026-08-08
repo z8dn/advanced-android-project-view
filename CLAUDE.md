@@ -51,6 +51,33 @@ The plugin intercepts IntelliJ's project tree via extension points and injects c
 - `showProjectFilesInModule` — toggle between module-level and project-root grouping
 - `projectFileGroups` — list of `ProjectFileGroup` objects (name + glob patterns)
 
+## CI
+
+CI is a deliberate hybrid, not a single system:
+
+- **Buildkite** runs build, test, verify, release draft, publish and UI tests, as
+  one pipeline defined in `.buildkite/pipeline.yml`. See `.buildkite/CLAUDE.md`
+  before changing anything there — the memory constraints and step conditions
+  are not obvious from the YAML alone.
+- **GitHub Actions** runs Qodana only (`.github/workflows/qodana_code_quality.yml`).
+  It stays there because Qodana performs a full Gradle project import, which
+  makes the IntelliJ Platform Gradle Plugin unpack the whole Android Studio
+  distribution next to Qodana's own analyzer JVM. That needs far more memory
+  than the Buildkite agents have, and GitHub's runners provide it free.
+
+Two pinned versions that look wrong and are not:
+
+- `qodana-action@v2026.2` drives `linter: jetbrains/qodana-jvm-community:2025.3`.
+  The mismatch is intentional. Older actions fail Gradle import with
+  `Invalid Gradle JDK configuration found`; bumping the linter to match the
+  action also fails. This pairing is the one that works.
+- `.idea/gradle.xml` pins `gradleJvm` to `jbr-17` while the project targets 21.
+  This looks like the cause of the error above and is not — changing it does not
+  help, and Qodana passes with it as-is.
+
+CI-only Gradle settings belong in `gradle/ci.properties`, never in
+`gradle.properties`, so local builds keep their own tuning.
+
 ## Dependencies & Compatibility
 - Kotlin 2.3.0, JDK 21
 - IntelliJ Platform Gradle Plugin 2.14.0
