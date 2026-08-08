@@ -106,7 +106,7 @@ steps:
     # settings come from gradle/ci.properties.
     commands:
       - &apply_ci_gradle_properties |
-        # Gradle natively reads $GRADLE_USER_HOME/gradle.properties, and values
+        # Gradle natively reads $$GRADLE_USER_HOME/gradle.properties, and values
         # there take precedence over the project's own gradle.properties.
         # Appending is how the CI-only file gets loaded without editing anything
         # tracked in the repo, and without affecting local builds.
