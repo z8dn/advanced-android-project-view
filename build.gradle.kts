@@ -132,4 +132,15 @@ tasks {
     publishPlugin {
         dependsOn(patchChangelog)
     }
+
+    verifyPlugin {
+        // VerifyPluginTask is a JavaExec and forks its own JVM. With no explicit
+        // heap it inherits the JVM default of a quarter of physical RAM, which is
+        // not enough to load Android Studio on a small CI agent.
+        //
+        // Do not set this through intellijPlatform.pluginVerification.freeArgs —
+        // those are appended to the verifier's own CLI arguments rather than the
+        // JVM's, which corrupts the argument list (see 4f257bd).
+        maxHeapSize = "1536m"
+    }
 }

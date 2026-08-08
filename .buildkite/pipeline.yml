@@ -24,7 +24,19 @@ steps:
 
   - label: ":shield: Verify Plugin"
     key: verify
-    command: "gradle verifyPlugin -x buildSearchableOptions --no-daemon --max-workers 1"
+    # verifyPlugin runs buildPlugin first, so three JVMs would otherwise be live
+    # at once: the Gradle daemon, the Kotlin daemon, and the forked verifier.
+    # That exceeds the agent's memory and the OOM killer takes the Gradle daemon,
+    # which surfaces as "Gradle build daemon disappeared unexpectedly".
+    #
+    # in-process compilation drops the separate Kotlin daemon, and the smaller
+    # Gradle heap leaves room for the verifier (capped in build.gradle.kts).
+    # These are set here rather than in gradle.properties so local builds keep
+    # their larger, faster settings.
+    command: >-
+      gradle verifyPlugin -x buildSearchableOptions --no-daemon --max-workers 1
+      -Dorg.gradle.jvmargs="-Xmx1024m -XX:MaxMetaspaceSize=384m"
+      -Dkotlin.compiler.execution.strategy=in-process
     plugins:
       - docker#v5.12.0:
           image: "gradle:9-jdk21"
