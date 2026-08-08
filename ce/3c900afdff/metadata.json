@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "ce3c900afdff",
+  "strategy": "manual-commit",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "qodana.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ce/3c900afdff/0/metadata.json",
+      "transcript": "/ce/3c900afdff/0/full.jsonl",
+      "compact_transcript": "/ce/3c900afdff/0/transcript.jsonl",
+      "content_hash": "/ce/3c900afdff/0/content_hash.txt",
+      "prompt": "/ce/3c900afdff/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 981,
+    "cache_read_tokens": 673152,
+    "output_tokens": 545,
+    "api_call_count": 2
+  }
+}
