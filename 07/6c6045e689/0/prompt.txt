@@ -1,0 +1,1 @@
+i've just updated @.github/workflows/qodana_code_quality.yml , push and see if it works
