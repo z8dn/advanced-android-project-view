@@ -136,4 +136,15 @@ tasks {
     publishPlugin {
         dependsOn(patchChangelog)
     }
+
+    test {
+        // Opt-in heap ceiling for the forked test JVM, set only when
+        // testMaxHeapSize is present — see gradle/ci.properties, which CI
+        // appends to $GRADLE_USER_HOME/gradle.properties. Unset locally, so
+        // local runs keep Gradle's default.
+        //
+        // This line exists because a task's maxHeapSize has no equivalent
+        // gradle.properties key; it cannot live in ci.properties alone.
+        providers.gradleProperty("testMaxHeapSize").orNull?.let { maxHeapSize = it }
+    }
 }
