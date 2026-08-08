@@ -9,9 +9,9 @@ jewelStandalone = "0.32.1-253.28294.285"
 skikoAwtRuntimeAll = "0.9.24"
 
 # plugins
-changelog = "2.2.1"
-intellijPlatform = "2.14.0"
-kotlin = "2.3.0"
+changelog = "2.5.0"
+intellijPlatform = "2.18.1"
+kotlin = "2.4.10"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
