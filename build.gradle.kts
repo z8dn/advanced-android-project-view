@@ -138,16 +138,13 @@ tasks {
     }
 
     test {
-        // Capped for Buildkite CI. The hosted agents are 2 vCPU / 4 GB and the
-        // test JVM forks alongside the Gradle daemon, so the two together have
-        // to fit in that. The docker plugin sets no memory limit on the
-        // container, so JVM ergonomics sizes the default heap from what it
-        // detects rather than from the agent, and picks a value far too large —
-        // the daemon then gets OOM-killed and Gradle reports the unhelpful
-        // "Gradle build daemon disappeared unexpectedly".
+        // Opt-in heap ceiling for the forked test JVM, set only when
+        // testMaxHeapSize is present — see gradle/ci.properties, which CI
+        // appends to $GRADLE_USER_HOME/gradle.properties. Unset locally, so
+        // local runs keep Gradle's default.
         //
-        // Builds 59 and 61 failed without this; 60 passed with it. Local runs
-        // are unaffected in practice: 14 tests, no failures, well under 1g.
-        maxHeapSize = "1g"
+        // This line exists because a task's maxHeapSize has no equivalent
+        // gradle.properties key; it cannot live in ci.properties alone.
+        providers.gradleProperty("testMaxHeapSize").orNull?.let { maxHeapSize = it }
     }
 }

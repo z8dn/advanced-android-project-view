@@ -102,13 +102,20 @@ steps:
     if: build.tag == null
     # Same three-JVM squeeze that used to kill Verify: Gradle daemon, Kotlin
     # daemon and the forked test JVM. This step passed in build 58 and was
-    # OOM-killed in 59, so it was sitting right on the limit. Compiling
-    # in-process removes the Kotlin daemon entirely; the test JVM's own heap is
-    # capped in build.gradle.kts.
-    command: >-
-      gradle check --no-daemon --max-workers 1
-      -Dorg.gradle.jvmargs="-Xmx1536m -XX:MaxMetaspaceSize=384m"
-      -Dkotlin.compiler.execution.strategy=in-process
+    # OOM-killed in 59 and 61, so it sits right on the limit. The memory
+    # settings come from gradle/ci.properties.
+    commands:
+      - &apply_ci_gradle_properties |
+        # Gradle natively reads $GRADLE_USER_HOME/gradle.properties, and values
+        # there take precedence over the project's own gradle.properties.
+        # Appending is how the CI-only file gets loaded without editing anything
+        # tracked in the repo, and without affecting local builds.
+        GUH="$${GRADLE_USER_HOME:-$$HOME/.gradle}"
+        mkdir -p "$$GUH"
+        cat gradle/ci.properties >> "$$GUH/gradle.properties"
+        echo "--- CI Gradle properties applied ---"
+        grep -vE '^\s*(#|$$)' gradle/ci.properties
+      - gradle check --no-daemon --max-workers 1
     plugins: *gradle_docker
     artifact_paths:
       - "build/reports/tests/**/*"
@@ -119,6 +126,7 @@ steps:
     depends_on: build
     plugins: *gradle_docker
     commands:
+      - *apply_ci_gradle_properties
       - buildkite-agent artifact download "build/distributions/*.zip" .
       - |
         # Reuse the artifact the Build step produced instead of recompiling.
@@ -137,8 +145,7 @@ steps:
         gradle verifyPlugin \
           -x buildPlugin \
           -x buildSearchableOptions \
-          --no-daemon --max-workers 1 \
-          -Dorg.gradle.jvmargs="-Xmx1024m -XX:MaxMetaspaceSize=384m"
+          --no-daemon --max-workers 1
     artifact_paths:
       - "build/reports/pluginVerifier/**/*"
 
