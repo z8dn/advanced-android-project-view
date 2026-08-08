@@ -1,13 +1,20 @@
 # Single CI pipeline for this repository.
 #
-# Replaces all four GitHub Actions workflows (build, qodana, release,
-# run-ui-tests) and the four separate Buildkite pipelines they were first
-# migrated to. One pipeline means one GitHub webhook and one place to configure
-# triggers; variation is expressed with `if:` below rather than by duplicating
-# pipeline settings.
+# Replaces .github/workflows/build.yml, release.yml and run-ui-tests.yml, and
+# the four separate Buildkite pipelines they were first migrated to. One
+# pipeline means one GitHub webhook and one place to configure triggers;
+# variation is expressed with `if:` below rather than by duplicating pipeline
+# settings.
+#
+# Qodana deliberately stays on GitHub Actions — see
+# .github/workflows/qodana_code_quality.yml. It performs a full Gradle project
+# import, which makes the IntelliJ Platform Gradle Plugin unpack the whole
+# Android Studio distribution alongside Qodana's own analyzer JVM. That needs
+# far more memory than the hosted agents here provide, and GitHub's runners
+# supply it for free on a public repo.
 #
 # What runs when:
-#   branch push / PR   build, test, verify, qodana
+#   branch push / PR   build, test, verify
 #   push to main       ...plus a GitHub release draft
 #   tag push           publish to JetBrains Marketplace, and nothing else
 #   manual             UI tests, when started with RUN_UI_TESTS=true:
@@ -122,59 +129,6 @@ steps:
           -Dorg.gradle.jvmargs="-Xmx1024m -XX:MaxMetaspaceSize=384m"
     artifact_paths:
       - "build/reports/pluginVerifier/**/*"
-
-  # Replaces .github/workflows/qodana_code_quality.yml. Runs on pull requests and
-  # on pushes to main and releases/*, and skips documentation-only changes in
-  # place of GitHub's paths-ignore.
-  - label: ":qodana: Qodana Scan"
-    key: qodana
-    if: build.tag == null && (build.pull_request.id != null || build.branch == "main" || build.branch =~ /^releases\//)
-    timeout_in_minutes: 45
-    env:
-      QODANA_ENDPOINT: "https://qodana.cloud"
-    commands:
-      - |
-        # On a PR, diff against the base branch; on a push, against the parent.
-        if [ -n "$${BUILDKITE_PULL_REQUEST_BASE_BRANCH:-}" ]; then
-          git fetch -q --no-tags origin "$$BUILDKITE_PULL_REQUEST_BASE_BRANCH"
-          CHANGED="$$(git diff --name-only "origin/$$BUILDKITE_PULL_REQUEST_BASE_BRANCH...HEAD")"
-        else
-          CHANGED="$$(git diff --name-only HEAD~1 HEAD 2>/dev/null || true)"
-        fi
-
-        # An empty diff means the change set could not be determined — scan
-        # rather than silently pass.
-        if [ -n "$$CHANGED" ]; then
-          NON_DOC="$$(printf '%s\n' "$$CHANGED" \
-            | grep -vE '^(CHANGELOG|CONTRIBUTING|CODE_OF_CONDUCT|README)\.md$$' \
-            | grep -v '^img/' || true)"
-          if [ -z "$$NON_DOC" ]; then
-            echo "Only documentation changes detected — skipping Qodana scan."
-            exit 0
-          fi
-        fi
-      - |
-        # Image must match `linter:` in qodana.yaml — the community edition. The
-        # licensed jetbrains/qodana-jvm image fails the license check.
-        #
-        # -u keeps report files owned by the agent user, so artifact upload and
-        # the agent's git clean do not trip over root-owned paths.
-        QODANA_TOKEN="$$(buildkite-agent secret get QODANA_TOKEN)"
-
-        mkdir -p build/qodana/results build/qodana/report
-
-        docker run --rm \
-          -u "$$(id -u):$$(id -g)" \
-          -v "$$(pwd):/data/project" \
-          -e QODANA_TOKEN="$$QODANA_TOKEN" \
-          -e QODANA_ENDPOINT="$$QODANA_ENDPOINT" \
-          -e _JAVA_OPTIONS="-Xmx2500m" \
-          jetbrains/qodana-jvm-community:2025.3 \
-          --save-report \
-          --results-dir /data/project/build/qodana/results \
-          --report-dir /data/project/build/qodana/report
-    artifact_paths:
-      - "build/qodana/report/**/*"
 
   # Replaces .github/workflows/run-ui-tests.yml, which was workflow_dispatch only.
   # Start with: bk build create -e RUN_UI_TESTS=true
