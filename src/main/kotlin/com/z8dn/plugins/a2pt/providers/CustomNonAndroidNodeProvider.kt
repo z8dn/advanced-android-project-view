@@ -1,16 +1,12 @@
 package com.z8dn.plugins.a2pt.providers
 
 import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
-import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 
 import com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleUtilCore
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 
 /**
@@ -43,7 +39,7 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
         val psiManager = PsiManager.getInstance(project)
 
         // Get project files for this module
-        val projectFiles = getProjectFiles(module)
+        val projectFiles = AndroidViewNodeUtils.getProjectFilesForModule(module)
 
         // Add ProjectFileNode for each file (no qualifier needed when files are in their own modules)
         projectFiles.forEach { file ->
@@ -54,23 +50,5 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
         }
 
         return modified
-    }
-
-    /**
-     * Gets all project files for a module.
-     * Filters project files from the entire project to those some group actually claims and
-     * that are contained in this module.
-     */
-    private fun getProjectFiles(module: Module): List<VirtualFile> {
-        val groups = AndroidViewSettings.getInstance().projectFileGroups
-        return AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
-            .filter { (file, relativePath) ->
-                AndroidViewNodeUtils.matchesAnyGroup(file.name, relativePath, groups)
-            }
-            .filter { (file, _) ->
-                ModuleUtilCore.moduleContainsFile(module, file, true) ||
-                ModuleUtilCore.moduleContainsFile(module, file, false)
-            }
-            .map { (file, _) -> file }
     }
 }

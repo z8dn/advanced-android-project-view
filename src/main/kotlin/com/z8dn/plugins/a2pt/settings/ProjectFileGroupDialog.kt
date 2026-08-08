@@ -28,12 +28,13 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
-import com.intellij.util.Alarm
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.ui.AsyncProcessIcon
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.NamedColorUtil
 import com.intellij.util.ui.UIUtil
+import com.intellij.util.ui.update.MergingUpdateQueue
+import com.intellij.util.ui.update.Update
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -56,7 +57,7 @@ import javax.swing.table.AbstractTableModel
  * does not appear in the tree at all.
  */
 class ProjectFileGroupDialog(
-    private val project: Project? = null,
+    project: Project? = null,
     existingGroup: ProjectFileGroup? = null,
     private val siblingGroups: List<ProjectFileGroup> = emptyList()
 ) : DialogWrapper(project, true) {
@@ -85,10 +86,23 @@ class ProjectFileGroupDialog(
     private var lastResult: PreviewResult? = null
 
     /**
-     * Debounces recomputation. A [Alarm.ThreadToUse.SWING_THREAD] alarm because the trigger is
-     * a Swing document event; the scan itself moves off the EDT below.
+     * Debounces recomputation. Runs on the EDT — the trigger is a Swing document event and the
+     * scan itself moves off the EDT below. Queuing the same identity coalesces keystrokes into
+     * one scan per [RECOMPUTE_DELAY_MS] window.
      */
-    private val recomputeAlarm by lazy { Alarm(Alarm.ThreadToUse.SWING_THREAD, disposable) }
+    private val recomputeQueue by lazy {
+        MergingUpdateQueue(
+            RECOMPUTE_QUEUE_NAME,
+            RECOMPUTE_DELAY_MS,
+            true,
+            // ANY_COMPONENT, not the preview list: the queue resolves modality when an update is
+            // queued, and the first one is queued from init() before the dialog has a window.
+            // Resolving against the list then would yield non-modal, and the update would sit
+            // unfired for as long as the dialog is up.
+            MergingUpdateQueue.ANY_COMPONENT,
+            disposable
+        )
+    }
 
     /**
      * The cell editor's field. A document listener writes through on every keystroke rather
@@ -215,10 +229,12 @@ class ProjectFileGroupDialog(
         scanningIcon.isVisible = false
         trailer.add(scanningIcon)
 
-        val inLabel = AndroidViewBundle.message("dialog.ProjectFileGroup.Preview.inProject")
         when {
             availableProjects.size > 1 -> {
-                trailer.add(JBLabel(inLabel).apply { foreground = NamedColorUtil.getInactiveTextColor() })
+                trailer.add(
+                    JBLabel(AndroidViewBundle.message("dialog.ProjectFileGroup.Preview.projectLabel"))
+                        .apply { foreground = NamedColorUtil.getInactiveTextColor() }
+                )
                 trailer.add(ComboBox(availableProjects.toTypedArray()).apply {
                     renderer = SimpleListCellRenderer.create("") { it.name }
                     selectedItem = previewProject
@@ -230,9 +246,14 @@ class ProjectFileGroupDialog(
             }
 
             previewProject != null -> {
-                trailer.add(JBLabel("$inLabel ${previewProject?.name}").apply {
-                    foreground = NamedColorUtil.getInactiveTextColor()
-                })
+                trailer.add(
+                    JBLabel(
+                        AndroidViewBundle.message(
+                            "dialog.ProjectFileGroup.Preview.inProject",
+                            previewProject?.name.orEmpty()
+                        )
+                    ).apply { foreground = NamedColorUtil.getInactiveTextColor() }
+                )
             }
         }
         return trailer
@@ -266,8 +287,7 @@ class ProjectFileGroupDialog(
     // region preview
 
     private fun scheduleRecompute() {
-        recomputeAlarm.cancelAllRequests()
-        recomputeAlarm.addRequest({ recompute() }, RECOMPUTE_DELAY_MS)
+        recomputeQueue.queue(Update.create(RECOMPUTE_QUEUE_NAME) { recompute() })
     }
 
     private fun recompute() {
@@ -605,7 +625,7 @@ class ProjectFileGroupDialog(
      * Renders a preview row with the same attributes `ProjectFileNode.update` uses, so the
      * preview and the tree read identically by construction rather than by coincidence.
      */
-    private inner class PreviewRowRenderer : ColoredListCellRenderer<PreviewRow>() {
+    private class PreviewRowRenderer : ColoredListCellRenderer<PreviewRow>() {
         override fun customizeCellRenderer(
             list: javax.swing.JList<out PreviewRow>,
             value: PreviewRow,
@@ -639,6 +659,7 @@ class ProjectFileGroupDialog(
         const val FILES_COLUMN = 1
 
         const val RECOMPUTE_DELAY_MS = 250
+        const val RECOMPUTE_QUEUE_NAME = "ProjectFileGroupPreviewRecompute"
         const val SPLITTER_PROPORTION = 0.45f
         const val INVALID_COUNT_TEXT = "—"
         const val PREVIEW_SPINNER_NAME = "ProjectFileGroupPreview"

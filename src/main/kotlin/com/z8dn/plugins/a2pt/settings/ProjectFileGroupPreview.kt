@@ -60,11 +60,6 @@ data class PreviewResult(
     val truncated: Boolean
 ) {
     val includedRows: List<PreviewRow> get() = rows.filter { it.excludedBy == null }
-    val excludedRows: List<PreviewRow> get() = rows.filter { it.excludedBy != null }
-
-    companion object {
-        val EMPTY = PreviewResult(emptyList(), 0, 0, emptyList(), false)
-    }
 }
 
 /**

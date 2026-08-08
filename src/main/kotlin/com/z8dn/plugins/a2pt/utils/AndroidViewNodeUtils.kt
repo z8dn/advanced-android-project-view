@@ -4,6 +4,7 @@ import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -70,6 +71,23 @@ object AndroidViewNodeUtils {
         relativePath: String,
         groups: List<ProjectFileGroup>
     ): Boolean = groups.any { matchesPatterns(fileName, relativePath, it.patterns) }
+
+    /**
+     * The project files to show inside [module] when `showProjectFilesInModule` is enabled:
+     * everything some group claims that this module also contains.
+     *
+     * @return List of project files (VirtualFile) belonging to this module
+     */
+    fun getProjectFilesForModule(module: Module): List<VirtualFile> {
+        val groups = AndroidViewSettings.getInstance().projectFileGroups
+        return getAllProjectFilesInProject(module.project)
+            .filter { (file, relativePath) -> matchesAnyGroup(file.name, relativePath, groups) }
+            .filter { (file, _) ->
+                ModuleUtilCore.moduleContainsFile(module, file, true) ||
+                    ModuleUtilCore.moduleContainsFile(module, file, false)
+            }
+            .map { (file, _) -> file }
+    }
 
     /**
      * Checks whether [pattern] compiles as a glob. A pattern that does not compile can

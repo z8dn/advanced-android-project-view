@@ -9,8 +9,6 @@ import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleUtilCore
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.z8dn.plugins.a2pt.nodes.GradleModuleWithProjectFiles
 import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
@@ -65,7 +63,7 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
         // Only show project files in modules if showProjectFilesInModule is true
         if (AndroidViewNodeUtils.showProjectFilesInModule()) {
             val psiManager = PsiManager.getInstance(project)
-            getProjectFiles(module).forEach { file ->
+            AndroidViewNodeUtils.getProjectFilesForModule(module).forEach { file ->
                 val psiFile = psiManager.findFile(file)
                 if (psiFile != null) {
                     // No qualifier needed when files are shown in their own modules
@@ -90,26 +88,4 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
             else -> listOf(GradleModuleWithProjectFiles(project, module, settings))
         }
     }
-
-    /**
-     * Gets all project files for a module, following the getBuildFiles pattern.
-     * Gets all project files from the entire project, then keeps those some group actually
-     * claims and that are contained in this module.
-     *
-     * @param module The module to filter files for
-     * @return List of project files (VirtualFile) belonging to this module
-     */
-    private fun getProjectFiles(module: Module): List<VirtualFile> {
-        val groups = AndroidViewSettings.getInstance().projectFileGroups
-        return AndroidViewNodeUtils.getAllProjectFilesInProject(module.project)
-            .filter { (file, relativePath) ->
-                AndroidViewNodeUtils.matchesAnyGroup(file.name, relativePath, groups)
-            }
-            .filter { (file, _) ->
-                ModuleUtilCore.moduleContainsFile(module, file, true) ||
-                ModuleUtilCore.moduleContainsFile(module, file, false)
-            }
-            .map { (file, _) -> file }
-    }
-
 }
