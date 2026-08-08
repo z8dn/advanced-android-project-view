@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "ea3dcd9bf024",
+  "strategy": "manual-commit",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".buildkite/CLAUDE.md",
+    "CLAUDE.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ea/3dcd9bf024/0/metadata.json",
+      "transcript": "/ea/3dcd9bf024/0/full.jsonl",
+      "compact_transcript": "/ea/3dcd9bf024/0/transcript.jsonl",
+      "content_hash": "/ea/3dcd9bf024/0/content_hash.txt",
+      "prompt": "/ea/3dcd9bf024/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 4681,
+    "cache_read_tokens": 1362288,
+    "output_tokens": 4035,
+    "api_call_count": 4
+  }
+}
