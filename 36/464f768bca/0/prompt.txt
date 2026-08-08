@@ -1,0 +1,13 @@
+this branch or PR is mean to migrate from github action to buildkite. I have buildkite CLI already. And i believe build is migrated into aapv-build. Can we continue with other flow
+
+---
+
+i have just re-auth, can u try again, the org slug is z8dn
+
+---
+
+Yes, i want to see if there actually run
+
+---
+
+wait beside upgrading the spec. Can we do another thing to make verifyPlugin work ?
