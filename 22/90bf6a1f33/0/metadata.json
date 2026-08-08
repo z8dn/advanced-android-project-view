@@ -1,0 +1,93 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "2290bf6a1f33",
+  "session_id": "b6074e5e-37c1-4036-af97-73d227a984c2",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-08T15:34:20.541986Z",
+  "branch": "migrate-to-buildkite",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "qodana.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5",
+  "turn_id": "2b05016d94a0",
+  "checkpoint_transcript_start": 1074,
+  "transcript_lines_at_start": 1074,
+  "compact_transcript_start": 245,
+  "token_usage": {
+    "input_tokens": 19,
+    "cache_creation_tokens": 6945,
+    "cache_read_tokens": 3329928,
+    "output_tokens": 3823,
+    "api_call_count": 10
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01CQdqd6axuTELQ4LxxN6LPu",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:brainstorming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "2b05016d94a0",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 50,
+        "end": 51,
+        "entry_ids": [
+          "71aa5b31-ade0-4ef9-8a43-34c5a7655ff7"
+        ],
+        "tool_use_id": "toolu_01CQdqd6axuTELQ4LxxN6LPu"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01CQdqd6axuTELQ4LxxN6LPu"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:brainstorming",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-08T15:34:20.437731Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 1,
+    "total_committed": 0,
+    "total_lines_changed": 1,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 29,
+      "user_lines_removed": 1,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".idea/AndroidProjectSystem.xml": 6,
+        ".idea/claudeCodeTabState.xml": 20,
+        ".junie/memory/language.json": 1,
+        ".junie/memory/memory.version": 1,
+        "qodana.yaml": 1
+      },
+      "user_removed_per_file": {
+        "qodana.yaml": 1
+      }
+    }
+  ]
+}
