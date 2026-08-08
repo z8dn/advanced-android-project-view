@@ -72,7 +72,9 @@ class IncludeDirectoryInGroupActionGroup : DefaultActionGroup() {
         override fun actionPerformed(e: AnActionEvent) {
             val pattern = buildPattern(project, dir) ?: return
             val prefilledGroup = ProjectFileGroup(dir.name, mutableListOf(pattern))
-            val dialog = ProjectFileGroupDialog(prefilledGroup)
+            // Here settings *are* the live state — there is no draft table in between.
+            val siblings = AndroidViewSettings.getInstance().projectFileGroups.toList()
+            val dialog = ProjectFileGroupDialog(project, prefilledGroup, siblings)
             if (dialog.showAndGet()) {
                 AndroidViewSettings.getInstance().projectFileGroups.add(dialog.getProjectFileGroup())
                 refreshAllProjects()
