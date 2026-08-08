@@ -100,11 +100,18 @@ steps:
   - label: ":test_tube: Test"
     key: test
     if: build.tag == null
-    command: "gradle check"
+    # Same three-JVM squeeze that used to kill Verify: Gradle daemon, Kotlin
+    # daemon and the forked test JVM. This step passed in build 58 and was
+    # OOM-killed in 59, so it was sitting right on the limit. Compiling
+    # in-process removes the Kotlin daemon entirely; the test JVM's own heap is
+    # capped in build.gradle.kts.
+    command: >-
+      gradle check --no-daemon --max-workers 1
+      -Dorg.gradle.jvmargs="-Xmx1536m -XX:MaxMetaspaceSize=384m"
+      -Dkotlin.compiler.execution.strategy=in-process
     plugins: *gradle_docker
     artifact_paths:
       - "build/reports/tests/**/*"
-      - "build/reports/kover/report.xml"
 
   - label: ":shield: Verify Plugin"
     key: verify
