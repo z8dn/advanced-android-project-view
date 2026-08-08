@@ -136,4 +136,18 @@ tasks {
     publishPlugin {
         dependsOn(patchChangelog)
     }
+
+    test {
+        // Capped for Buildkite CI. The hosted agents are 2 vCPU / 4 GB and the
+        // test JVM forks alongside the Gradle daemon, so the two together have
+        // to fit in that. The docker plugin sets no memory limit on the
+        // container, so JVM ergonomics sizes the default heap from what it
+        // detects rather than from the agent, and picks a value far too large —
+        // the daemon then gets OOM-killed and Gradle reports the unhelpful
+        // "Gradle build daemon disappeared unexpectedly".
+        //
+        // Builds 59 and 61 failed without this; 60 passed with it. Local runs
+        // are unaffected in practice: 14 tests, no failures, well under 1g.
+        maxHeapSize = "1g"
+    }
 }
