@@ -1,59 +1,236 @@
-# Main CI pipeline — replaces .github/workflows/build.yml
+# Single CI pipeline for this repository.
+#
+# Replaces all four GitHub Actions workflows (build, qodana, release,
+# run-ui-tests) and the four separate Buildkite pipelines they were first
+# migrated to. One pipeline means one GitHub webhook and one place to configure
+# triggers; variation is expressed with `if:` below rather than by duplicating
+# pipeline settings.
+#
+# What runs when:
+#   branch push / PR   build, test, verify, qodana
+#   push to main       ...plus a GitHub release draft
+#   tag push           publish to JetBrains Marketplace, and nothing else
+#   manual             UI tests, when started with RUN_UI_TESTS=true:
+#                        bk build create -e RUN_UI_TESTS=true
+#
+# The pipeline must have build_branches, build_pull_requests and build_tags all
+# enabled for these conditions to be reachable.
 
 steps:
-  - label: ":test_tube: Test"
-    key: test
-    command: "gradle check"
-    plugins:
+  # ─── Tag builds: publish only ──────────────────────────────────────────────
+  #
+  # Replaces .github/workflows/release.yml, which triggered on the GitHub
+  # `release` event. Buildkite has no equivalent, so this keys off the tag.
+  #
+  # Requires PUBLISH_TOKEN, CERTIFICATE_CHAIN, PRIVATE_KEY and
+  # PRIVATE_KEY_PASSWORD as cluster secrets. They do not exist yet, so this step
+  # will fail until they are added:
+  #   bk secret create --cluster-uuid <uuid> --key PUBLISH_TOKEN
+  - label: ":rocket: Publish Plugin"
+    key: publish
+    if: build.tag != null
+    plugins: &gradle_docker
       - docker#v5.12.0:
           image: "gradle:9-jdk21"
+          mount-buildkite-agent: true
+    commands:
+      - apt-get update -qq && apt-get install -y -qq gh
+      - |
+        export GITHUB_TOKEN="$$(buildkite-agent secret get GITHUB_TOKEN)"
+        export PUBLISH_TOKEN="$$(buildkite-agent secret get PUBLISH_TOKEN)"
+        export CERTIFICATE_CHAIN="$$(buildkite-agent secret get CERTIFICATE_CHAIN)"
+        export PRIVATE_KEY="$$(buildkite-agent secret get PRIVATE_KEY)"
+        export PRIVATE_KEY_PASSWORD="$$(buildkite-agent secret get PRIVATE_KEY_PASSWORD)"
+
+        TAG="$$BUILDKITE_TAG"
+
+        # Strip leading blank lines from the release notes, matching the sed in
+        # the old workflow.
+        CHANGELOG="$$(gh release view "$$TAG" --json body -q '.body' \
+          | sed -e 's/^[[:space:]]*$$//g' -e '/./,$$!d')"
+
+        if [ -n "$$CHANGELOG" ]; then
+          gradle patchChangelog --release-note="$$CHANGELOG"
+        fi
+
+        gradle publishPlugin
+        gh release upload "$$TAG" ./build/distributions/*
+
+        if [ -n "$$CHANGELOG" ]; then
+          BRANCH="changelog-update-$$TAG"
+
+          git config user.email "buildkite@ci"
+          git config user.name "Buildkite"
+          git checkout -b "$$BRANCH"
+          git commit -am "Changelog update - $$TAG"
+          git push --set-upstream origin "$$BRANCH"
+
+          gh label create "release changelog" \
+            --description "Pull requests with release changelog update" \
+            --force || true
+
+          gh pr create \
+            --title "Changelog update - \`$$TAG\`" \
+            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$$TAG\` version." \
+            --label "release changelog" \
+            --head "$$BRANCH"
+        fi
+    artifact_paths:
+      - "build/distributions/*.zip"
+
+  # ─── Everything below is for non-tag builds ────────────────────────────────
+
+  - label: ":hammer: Build"
+    key: build
+    if: build.tag == null
+    # buildSearchableOptions launches a full IntelliJ IDE and needs ~4GB. It only
+    # generates marketplace search indexes, so it is skipped on CI.
+    command: "gradle buildPlugin -x buildSearchableOptions"
+    plugins: *gradle_docker
+    artifact_paths:
+      - "build/distributions/*.zip"
+
+  - label: ":test_tube: Test"
+    key: test
+    if: build.tag == null
+    command: "gradle check"
+    plugins: *gradle_docker
     artifact_paths:
       - "build/reports/tests/**/*"
       - "build/reports/kover/report.xml"
 
-  - label: ":hammer: Build"
-    key: build
-    # buildSearchableOptions launches a full IntelliJ IDE process and requires ~4GB RAM.
-    # Skip it in CI; it only generates marketplace search indexes.
-    command: "gradle buildPlugin -x buildSearchableOptions"
-    plugins:
-      - docker#v5.12.0:
-          image: "gradle:9-jdk21"
-    artifact_paths:
-      - "build/distributions/*.zip"
-
   - label: ":shield: Verify Plugin"
     key: verify
-    # verifyPlugin runs buildPlugin first, so three JVMs would otherwise be live
-    # at once: the Gradle daemon, the Kotlin daemon, and the forked verifier.
-    # That exceeds the agent's memory and the OOM killer takes the Gradle daemon,
-    # which surfaces as "Gradle build daemon disappeared unexpectedly".
-    #
-    # in-process compilation drops the separate Kotlin daemon, and the smaller
-    # Gradle heap leaves room for the verifier (capped in build.gradle.kts).
-    # These are set here rather than in gradle.properties so local builds keep
-    # their larger, faster settings.
-    command: >-
-      gradle verifyPlugin -x buildSearchableOptions --no-daemon --max-workers 1
-      -Dorg.gradle.jvmargs="-Xmx1024m -XX:MaxMetaspaceSize=384m"
-      -Dkotlin.compiler.execution.strategy=in-process
-    plugins:
-      - docker#v5.12.0:
-          image: "gradle:9-jdk21"
+    if: build.tag == null
+    depends_on: build
+    plugins: *gradle_docker
+    commands:
+      - buildkite-agent artifact download "build/distributions/*.zip" .
+      - |
+        # Point the verifier at the artifact the Build step produced and exclude
+        # buildPlugin, so this step neither recompiles nor starts a Kotlin
+        # daemon. Three JVMs at once is what previously exhausted the agent and
+        # showed up as "Gradle build daemon disappeared unexpectedly".
+        ARCHIVE="$$(ls build/distributions/*.zip | head -1)"
+        echo "Verifying $$ARCHIVE"
+
+        gradle verifyPlugin \
+          -PverifyArchive="$$ARCHIVE" \
+          -x buildPlugin \
+          -x buildSearchableOptions \
+          --no-daemon --max-workers 1 \
+          -Dorg.gradle.jvmargs="-Xmx1024m -XX:MaxMetaspaceSize=384m"
     artifact_paths:
       - "build/reports/pluginVerifier/**/*"
 
-  - wait: ~
-
-  - label: ":github: Create Release Draft"
-    key: release-draft
-    branches: "main"
-    agents:
-      queue: default
+  # Replaces .github/workflows/qodana_code_quality.yml. Runs on pull requests and
+  # on pushes to main and releases/*, and skips documentation-only changes in
+  # place of GitHub's paths-ignore.
+  - label: ":qodana: Qodana Scan"
+    key: qodana
+    if: build.tag == null && (build.pull_request.id != null || build.branch == "main" || build.branch =~ /^releases\//)
+    timeout_in_minutes: 45
     env:
-      GITHUB_TOKEN: $${GITHUB_TOKEN?}
+      QODANA_ENDPOINT: "https://qodana.cloud"
     commands:
       - |
+        # On a PR, diff against the base branch; on a push, against the parent.
+        if [ -n "$${BUILDKITE_PULL_REQUEST_BASE_BRANCH:-}" ]; then
+          git fetch -q --no-tags origin "$$BUILDKITE_PULL_REQUEST_BASE_BRANCH"
+          CHANGED="$$(git diff --name-only "origin/$$BUILDKITE_PULL_REQUEST_BASE_BRANCH...HEAD")"
+        else
+          CHANGED="$$(git diff --name-only HEAD~1 HEAD 2>/dev/null || true)"
+        fi
+
+        # An empty diff means the change set could not be determined — scan
+        # rather than silently pass.
+        if [ -n "$$CHANGED" ]; then
+          NON_DOC="$$(printf '%s\n' "$$CHANGED" \
+            | grep -vE '^(CHANGELOG|CONTRIBUTING|CODE_OF_CONDUCT|README)\.md$$' \
+            | grep -v '^img/' || true)"
+          if [ -z "$$NON_DOC" ]; then
+            echo "Only documentation changes detected — skipping Qodana scan."
+            exit 0
+          fi
+        fi
+      - |
+        # Image must match `linter:` in qodana.yaml — the community edition. The
+        # licensed jetbrains/qodana-jvm image fails the license check.
+        #
+        # -u keeps report files owned by the agent user, so artifact upload and
+        # the agent's git clean do not trip over root-owned paths.
+        QODANA_TOKEN="$$(buildkite-agent secret get QODANA_TOKEN)"
+
+        mkdir -p build/qodana/results build/qodana/report
+
+        docker run --rm \
+          -u "$$(id -u):$$(id -g)" \
+          -v "$$(pwd):/data/project" \
+          -e QODANA_TOKEN="$$QODANA_TOKEN" \
+          -e QODANA_ENDPOINT="$$QODANA_ENDPOINT" \
+          -e _JAVA_OPTIONS="-Xmx2500m" \
+          jetbrains/qodana-jvm-community:2025.3 \
+          --save-report \
+          --results-dir /data/project/build/qodana/results \
+          --report-dir /data/project/build/qodana/report
+    artifact_paths:
+      - "build/qodana/report/**/*"
+
+  # Replaces .github/workflows/run-ui-tests.yml, which was workflow_dispatch only.
+  # Start with: bk build create -e RUN_UI_TESTS=true
+  #
+  # WARNING: this cannot pass yet. There is no `runIdeForUiTests` task — IntelliJ
+  # Platform Gradle Plugin 2.x renamed it to `testIdeUi`, which additionally
+  # requires testFramework(TestFrameworkType.Starter) and intellij-ui-test-robot.
+  # build.gradle.kts currently declares TestFrameworkType.Platform only.
+  #
+  # Linux only: the sole hosted queue is linux/amd64, so the macOS and Windows
+  # legs of the original matrix had no agents to run on.
+  - label: ":linux: UI Tests"
+    key: ui-tests
+    if: build.env("RUN_UI_TESTS") == "true"
+    env:
+      DISPLAY: ":99.0"
+    plugins:
+      - docker#v5.12.0:
+          image: "gradle:9-jdk21"
+          mount-buildkite-agent: true
+          environment:
+            - DISPLAY
+    commands:
+      # The gradle image is Debian-based and runs as root; Xvfb is not included.
+      - apt-get update -qq && apt-get install -y -qq xvfb curl
+      - Xvfb -ac :99 -screen 0 1920x1080x16 &
+      - gradle runIdeForUiTests --no-daemon --max-workers 1 &
+      - |
+        # Wait for the IDE's robot-server (replaces url-health-check-action)
+        for i in $$(seq 1 15); do
+          if curl -sf http://127.0.0.1:8082 > /dev/null 2>&1; then
+            echo "IDE is ready"
+            break
+          fi
+          echo "Attempt $$i/15 — waiting 30s..."
+          sleep 30
+        done
+      - gradle test --no-daemon --max-workers 1
+    artifact_paths:
+      - "build/reports/tests/**/*"
+
+  # ─── Release draft, once CI is green on main ───────────────────────────────
+  - label: ":github: Create Release Draft"
+    key: release-draft
+    # `if` and `branches` are mutually exclusive on a step, so the branch
+    # restriction lives in the condition.
+    if: build.tag == null && build.branch == "main"
+    depends_on:
+      - test
+      - verify
+    plugins: *gradle_docker
+    commands:
+      - apt-get update -qq && apt-get install -y -qq gh
+      - |
+        export GITHUB_TOKEN="$$(buildkite-agent secret get GITHUB_TOKEN)"
+
         PROPERTIES="$$(gradle properties --console=plain -q)"
         VERSION="$$(echo "$$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
         CHANGELOG="$$(gradle getChangelog --unreleased --no-header --console=plain -q)"

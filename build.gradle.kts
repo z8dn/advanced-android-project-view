@@ -142,5 +142,15 @@ tasks {
         // those are appended to the verifier's own CLI arguments rather than the
         // JVM's, which corrupts the argument list (see 4f257bd).
         maxHeapSize = "1536m"
+
+        // CI builds the plugin in an earlier step and downloads the artifact, so
+        // let the verifier point at a prebuilt archive. archiveFile's convention
+        // is buildPlugin's output provider, which is what gives this task its
+        // implicit dependency on buildPlugin; replacing it with a plain path
+        // drops that edge, so `-x buildPlugin` skips the compile entirely.
+        val prebuiltArchive = providers.gradleProperty("verifyArchive")
+        if (prebuiltArchive.isPresent) {
+            archiveFile = layout.projectDirectory.file(prebuiltArchive.get())
+        }
     }
 }
