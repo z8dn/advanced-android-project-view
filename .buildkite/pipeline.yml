@@ -212,7 +212,15 @@ steps:
           --jq '.[] | select(.draft == true) | .id' \
           | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
 
-        gh release create "v$$VERSION" \
+        # gh prints the new release's URL on stdout. A draft has no tag yet, so
+        # that URL is the only way back to it — hence the annotation rather than
+        # leaving it buried in the job log.
+        RELEASE_URL="$$(gh release create "v$$VERSION" \
           --draft \
           --title "v$$VERSION" \
-          --notes "$$CHANGELOG"
+          --notes "$$CHANGELOG")"
+
+        buildkite-agent annotate \
+          "Release draft [**v$$VERSION**]($$RELEASE_URL) is ready to review and publish." \
+          --style success \
+          --context release-draft
