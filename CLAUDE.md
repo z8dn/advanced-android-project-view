@@ -82,7 +82,7 @@ CI-only Gradle settings belong in `gradle/ci.properties`, never in
 ## Dependencies & Compatibility
 - Kotlin 2.4.10, JDK 21
 - IntelliJ Platform Gradle Plugin 2.18.1
-- Target: Android Studio Otter 3 Feature Drop (2025.2.3.9) and later
+- Target: Android Studio Quail 3 (2026.1.3.7) and later, `pluginSinceBuild = 261`
 - Bundled plugins used: `com.intellij.gradle`, `org.jetbrains.android`, `com.intellij.java`
 - No external runtime dependencies
 
