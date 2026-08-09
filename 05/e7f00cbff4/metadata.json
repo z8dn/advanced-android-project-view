@@ -3,8 +3,15 @@
   "checkpoint_id": "05e7f00cbff4",
   "strategy": "manual-commit",
   "branch": "ci/revert-buildkite-migration",
-  "checkpoints_count": 1,
-  "files_touched": null,
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".buildkite/CLAUDE.md",
+    ".buildkite/pipeline.yml",
+    ".github/workflows/build.yml",
+    ".github/workflows/release.yml",
+    ".github/workflows/run-ui-tests.yml",
+    "gradle/ci.properties"
+  ],
   "sessions": [
     {
       "metadata": "/05/e7f00cbff4/0/metadata.json",
@@ -12,13 +19,20 @@
       "compact_transcript": "/05/e7f00cbff4/0/transcript.jsonl",
       "content_hash": "/05/e7f00cbff4/0/content_hash.txt",
       "prompt": "/05/e7f00cbff4/0/prompt.txt"
+    },
+    {
+      "metadata": "/05/e7f00cbff4/1/metadata.json",
+      "transcript": "/05/e7f00cbff4/1/full.jsonl",
+      "compact_transcript": "/05/e7f00cbff4/1/transcript.jsonl",
+      "content_hash": "/05/e7f00cbff4/1/content_hash.txt",
+      "prompt": "/05/e7f00cbff4/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 142,
-    "cache_creation_tokens": 146962,
-    "cache_read_tokens": 5913257,
-    "output_tokens": 44648,
-    "api_call_count": 77
+    "input_tokens": 163,
+    "cache_creation_tokens": 160038,
+    "cache_read_tokens": 7229167,
+    "output_tokens": 53353,
+    "api_call_count": 88
   }
 }

@@ -1,0 +1,1 @@
+i feels like buildkite free plan is not what we are looking for. Please revert this PR https://github.com/z8dn/advanced-android-project-view/pull/48 so that everything go back to GHA
