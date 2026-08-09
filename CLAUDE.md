@@ -55,15 +55,23 @@ The plugin intercepts IntelliJ's project tree via extension points and injects c
 
 CI is a deliberate hybrid, not a single system:
 
-- **Buildkite** runs build, test, verify, release draft, publish and UI tests, as
-  one pipeline defined in `.buildkite/pipeline.yml`. See `.buildkite/CLAUDE.md`
+- **Buildkite** runs build, test, verify, release draft and UI tests, as one
+  pipeline defined in `.buildkite/pipeline.yml`. See `.buildkite/CLAUDE.md`
   before changing anything there — the memory constraints and step conditions
   are not obvious from the YAML alone.
-- **GitHub Actions** runs Qodana only (`.github/workflows/qodana_code_quality.yml`).
-  It stays there because Qodana performs a full Gradle project import, which
-  makes the IntelliJ Platform Gradle Plugin unpack the whole Android Studio
-  distribution next to Qodana's own analyzer JVM. That needs far more memory
-  than the Buildkite agents have, and GitHub's runners provide it free.
+- **GitHub Actions** runs Qodana (`.github/workflows/qodana_code_quality.yml`)
+  and publishing (`.github/workflows/release.yml`). Both stay there because
+  both launch a full Android Studio, which does not fit on the 4 GB Buildkite
+  agents: Qodana performs a full Gradle project import, which makes the
+  IntelliJ Platform Gradle Plugin unpack the whole distribution next to
+  Qodana's own analyzer JVM, and `publishPlugin` pulls in
+  `buildSearchableOptions`, which starts an IDE to generate the marketplace
+  search index. GitHub's runners provide the memory free.
+
+Releasing spans both systems: Buildkite drafts the GitHub release on every
+green `main` build, publishing that draft fires the `release` event, and
+`release.yml` signs and ships the plugin to JetBrains Marketplace. A Buildkite
+publish step was tried and reverted — see `.buildkite/CLAUDE.md`.
 
 One pinned version looks wrong and is not:
 

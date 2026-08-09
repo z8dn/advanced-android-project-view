@@ -1,105 +1,55 @@
 # Single CI pipeline for this repository.
 #
-# Replaces .github/workflows/build.yml, release.yml and run-ui-tests.yml, and
-# the four separate Buildkite pipelines they were first migrated to. One
-# pipeline means one GitHub webhook and one place to configure triggers;
-# variation is expressed with `if:` below rather than by duplicating pipeline
-# settings.
+# Replaces .github/workflows/build.yml and run-ui-tests.yml, and the four
+# separate Buildkite pipelines they were first migrated to. One pipeline means
+# one GitHub webhook and one place to configure triggers; variation is
+# expressed with `if:` below rather than by duplicating pipeline settings.
 #
-# Qodana deliberately stays on GitHub Actions — see
-# .github/workflows/qodana_code_quality.yml. It performs a full Gradle project
-# import, which makes the IntelliJ Platform Gradle Plugin unpack the whole
-# Android Studio distribution alongside Qodana's own analyzer JVM. That needs
-# far more memory than the hosted agents here provide, and GitHub's runners
-# supply it for free on a public repo.
+# Two things deliberately stay on GitHub Actions, both for the same reason —
+# they need to launch a full Android Studio, and these agents are 2 vCPU / 4 GB:
+#
+#   .github/workflows/qodana_code_quality.yml
+#     Performs a full Gradle project import, which makes the IntelliJ Platform
+#     Gradle Plugin unpack the whole Android Studio distribution alongside
+#     Qodana's own analyzer JVM.
+#
+#   .github/workflows/release.yml
+#     `publishPlugin` pulls in `buildSearchableOptions`, which starts an IDE to
+#     generate the marketplace search index. A Publish Plugin step lived here
+#     briefly and was reverted: build 92 died in `buildSearchableOptions` with
+#     "Gradle build daemon disappeared unexpectedly", the OOM signature
+#     described in gradle/ci.properties. Excluding the task would have fixed
+#     the build at the cost of shipping releases without their search index —
+#     GitHub's runners have the memory, so publishing went back there instead.
+#     That workflow triggers on the GitHub `release` event, so the draft below
+#     is what connects the two halves: Buildkite drafts it, you publish it,
+#     GitHub Actions ships it.
 #
 # What runs when:
 #   branch push / PR   build, test, verify
 #   push to main       ...plus a GitHub release draft
-#   tag push           publish to JetBrains Marketplace, and nothing else
 #   manual             UI tests, when started with RUN_UI_TESTS=true:
 #                        bk build create -e RUN_UI_TESTS=true
 #
-# The pipeline must have build_branches, build_pull_requests and build_tags all
-# enabled for these conditions to be reachable.
+# The pipeline must have build_branches and build_pull_requests enabled for
+# these conditions to be reachable. Tag builds no longer do anything here; if
+# build_tags is left on, a tag push just re-runs build/test/verify.
 
 steps:
-  # ─── Tag builds: publish only ──────────────────────────────────────────────
-  #
-  # Replaces .github/workflows/release.yml, which triggered on the GitHub
-  # `release` event. Buildkite has no equivalent, so this keys off the tag.
-  #
-  # Requires PUBLISH_TOKEN, CERTIFICATE_CHAIN, PRIVATE_KEY and
-  # PRIVATE_KEY_PASSWORD as cluster secrets. They do not exist yet, so this step
-  # will fail until they are added:
-  #   bk secret create --cluster-uuid <uuid> --key PUBLISH_TOKEN
-  - label: ":rocket: Publish Plugin"
-    key: publish
-    if: build.tag != null
+  - label: ":hammer: Build"
+    key: build
+    # buildSearchableOptions launches a full IntelliJ IDE and needs ~4GB. It only
+    # generates marketplace search indexes, so it is skipped on CI.
+    command: "gradle buildPlugin -x buildSearchableOptions"
     plugins: &gradle_docker
       - docker#v5.12.0:
           image: "gradle:9-jdk21"
           mount-buildkite-agent: true
-    commands:
-      - apt-get update -qq && apt-get install -y -qq gh
-      - |
-        export GITHUB_TOKEN="$$(buildkite-agent secret get GITHUB_TOKEN)"
-        export PUBLISH_TOKEN="$$(buildkite-agent secret get PUBLISH_TOKEN)"
-        export CERTIFICATE_CHAIN="$$(buildkite-agent secret get CERTIFICATE_CHAIN)"
-        export PRIVATE_KEY="$$(buildkite-agent secret get PRIVATE_KEY)"
-        export PRIVATE_KEY_PASSWORD="$$(buildkite-agent secret get PRIVATE_KEY_PASSWORD)"
-
-        TAG="$$BUILDKITE_TAG"
-
-        # Strip leading blank lines from the release notes, matching the sed in
-        # the old workflow.
-        CHANGELOG="$$(gh release view "$$TAG" --json body -q '.body' \
-          | sed -e 's/^[[:space:]]*$$//g' -e '/./,$$!d')"
-
-        if [ -n "$$CHANGELOG" ]; then
-          gradle patchChangelog --release-note="$$CHANGELOG"
-        fi
-
-        gradle publishPlugin
-        gh release upload "$$TAG" ./build/distributions/*
-
-        if [ -n "$$CHANGELOG" ]; then
-          BRANCH="changelog-update-$$TAG"
-
-          git config user.email "buildkite@ci"
-          git config user.name "Buildkite"
-          git checkout -b "$$BRANCH"
-          git commit -am "Changelog update - $$TAG"
-          git push --set-upstream origin "$$BRANCH"
-
-          gh label create "release changelog" \
-            --description "Pull requests with release changelog update" \
-            --force || true
-
-          gh pr create \
-            --title "Changelog update - \`$$TAG\`" \
-            --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$$TAG\` version." \
-            --label "release changelog" \
-            --head "$$BRANCH"
-        fi
-    artifact_paths:
-      - "build/distributions/*.zip"
-
-  # ─── Everything below is for non-tag builds ────────────────────────────────
-
-  - label: ":hammer: Build"
-    key: build
-    if: build.tag == null
-    # buildSearchableOptions launches a full IntelliJ IDE and needs ~4GB. It only
-    # generates marketplace search indexes, so it is skipped on CI.
-    command: "gradle buildPlugin -x buildSearchableOptions"
-    plugins: *gradle_docker
     artifact_paths:
       - "build/distributions/*.zip"
 
   - label: ":test_tube: Test"
     key: test
-    if: build.tag == null
     # Same three-JVM squeeze that used to kill Verify: Gradle daemon, Kotlin
     # daemon and the forked test JVM. This step passed in build 58 and was
     # OOM-killed in 59 and 61, so it sits right on the limit. The memory
@@ -122,7 +72,6 @@ steps:
 
   - label: ":shield: Verify Plugin"
     key: verify
-    if: build.tag == null
     depends_on: build
     plugins: *gradle_docker
     commands:
@@ -190,11 +139,15 @@ steps:
       - "build/reports/tests/**/*"
 
   # ─── Release draft, once CI is green on main ───────────────────────────────
+  #
+  # The handoff to .github/workflows/release.yml: this drafts the release, you
+  # publish it, and publishing fires the GitHub `release` event that workflow
+  # listens for.
   - label: ":github: Create Release Draft"
     key: release-draft
     # `if` and `branches` are mutually exclusive on a step, so the branch
     # restriction lives in the condition.
-    if: build.tag == null && build.branch == "main"
+    if: build.branch == "main"
     depends_on:
       - test
       - verify
@@ -202,7 +155,12 @@ steps:
     commands:
       - apt-get update -qq && apt-get install -y -qq gh
       - |
-        export GITHUB_TOKEN="$$(buildkite-agent secret get GITHUB_TOKEN)"
+        # Assign and export separately. `export VAR="$$(cmd)"` reports the exit
+        # status of `export`, not of the command substitution, so a failed
+        # secret read would silently yield an empty token and surface much
+        # later as a confusing gh error.
+        GITHUB_TOKEN="$$(buildkite-agent secret get GITHUB_TOKEN)"
+        export GITHUB_TOKEN
 
         PROPERTIES="$$(gradle properties --console=plain -q)"
         VERSION="$$(echo "$$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"

@@ -16,10 +16,22 @@ adding pipelines. If a step never fires, check
 |---|---|
 | branch push / PR | build, test, verify |
 | push to main | ...plus the release draft |
-| tag push | publish to JetBrains Marketplace, nothing else |
 | manual, `RUN_UI_TESTS=true` | UI tests |
 
-**Qodana is not here.** It stays on GitHub Actions — see the root `CLAUDE.md`.
+**Qodana and publishing are not here.** Both stay on GitHub Actions, for the
+same reason: each needs to launch a full Android Studio, which does not fit in
+4 GB. See the root `CLAUDE.md`.
+
+A Publish Plugin step did live here briefly and was reverted. `publishPlugin`
+pulls in `buildSearchableOptions`, which starts an IDE to build the marketplace
+search index; build 92 died in that task with `Gradle build daemon disappeared
+unexpectedly`. `-x buildSearchableOptions` would have made it pass, but every
+published release would then ship without its search index. Don't re-add it
+while the agents are this size.
+
+Releasing is therefore a handoff: Buildkite drafts the release on `main`, you
+publish the draft, and publishing fires the GitHub `release` event that
+`.github/workflows/release.yml` listens for. Nothing here keys off tags.
 
 ## Agents
 
@@ -48,6 +60,10 @@ These each cost real debugging time:
   secret reads.
 - **Buildkite interpolates single-`$` variables at upload time**, including
   inside comments. Use `$$` for anything the shell should see.
+- **`export VAR="$(cmd)"` swallows `cmd`'s exit status** — the status reported
+  is `export`'s own, so it is 0 even under `set -e`. A failed
+  `buildkite-agent secret get` then yields an empty string and the step carries
+  on. Assign on one line, `export` on the next.
 - **Hosted agent instance shape cannot be changed via the REST API.** `PATCH`
   silently ignores a `hosted_agents` body and returns the old shape;
   `bk queue update` only exposes `--description` and `--retry-agent-affinity`.
