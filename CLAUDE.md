@@ -53,17 +53,24 @@ The plugin intercepts IntelliJ's project tree via extension points and injects c
 
 ## CI
 
-CI is a deliberate hybrid, not a single system:
+Everything runs on GitHub Actions, in `.github/workflows/`:
 
-- **Buildkite** runs build, test, verify, release draft, publish and UI tests, as
-  one pipeline defined in `.buildkite/pipeline.yml`. See `.buildkite/CLAUDE.md`
-  before changing anything there — the memory constraints and step conditions
-  are not obvious from the YAML alone.
-- **GitHub Actions** runs Qodana only (`.github/workflows/qodana_code_quality.yml`).
-  It stays there because Qodana performs a full Gradle project import, which
-  makes the IntelliJ Platform Gradle Plugin unpack the whole Android Studio
-  distribution next to Qodana's own analyzer JVM. That needs far more memory
-  than the Buildkite agents have, and GitHub's runners provide it free.
+| Workflow | Trigger | Does |
+|---|---|---|
+| `build.yml` | push, PR | build, test, verify, and draft a release on non-PR runs |
+| `release.yml` | GitHub `release` event | sign and publish to JetBrains Marketplace, then open a changelog PR |
+| `run-ui-tests.yml` | `workflow_dispatch` | UI tests |
+| `qodana_code_quality.yml` | push, PR | Qodana inspection |
+
+CI lived on Buildkite between 2026-08-08 and 2026-08-09 (PR #48, reverted).
+Worth knowing if you are tempted to move it again: the free plan's hosted
+agents are 2 vCPU / 4 GB, and several tasks here need far more. Qodana does a
+full Gradle project import, which makes the IntelliJ Platform Gradle Plugin
+unpack the whole Android Studio distribution next to Qodana's own analyzer JVM;
+`publishPlugin` and `buildPlugin` pull in `buildSearchableOptions`, which starts
+an IDE to generate the marketplace search index. Fitting these into 4 GB meant
+skipping `buildSearchableOptions`, which ships releases without their search
+index. GitHub's runners have the memory free on a public repo.
 
 One pinned version looks wrong and is not:
 
@@ -75,9 +82,6 @@ One pinned version looks wrong and is not:
 `.idea/gradle.xml` used to pin `gradleJvm` to `jbr-17` while the project
 targeted 21. That pin was never the cause of the error above — Qodana passed
 with it either way — so it now tracks the toolchain at `jbr-21`.
-
-CI-only Gradle settings belong in `gradle/ci.properties`, never in
-`gradle.properties`, so local builds keep their own tuning.
 
 ## Dependencies & Compatibility
 - Kotlin 2.4.10, JDK 21
