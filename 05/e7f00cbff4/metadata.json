@@ -5,12 +5,8 @@
   "branch": "ci/revert-buildkite-migration",
   "checkpoints_count": 2,
   "files_touched": [
-    ".buildkite/CLAUDE.md",
-    ".buildkite/pipeline.yml",
-    ".github/workflows/build.yml",
-    ".github/workflows/release.yml",
-    ".github/workflows/run-ui-tests.yml",
-    "gradle/ci.properties"
+    "CLAUDE.md",
+    "build.gradle.kts"
   ],
   "sessions": [
     {
@@ -29,10 +25,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 163,
-    "cache_creation_tokens": 160038,
-    "cache_read_tokens": 7229167,
-    "output_tokens": 53353,
-    "api_call_count": 88
+    "input_tokens": 3648,
+    "cache_creation_tokens": 255973,
+    "cache_read_tokens": 12606617,
+    "output_tokens": 101535,
+    "api_call_count": 156
   }
 }
