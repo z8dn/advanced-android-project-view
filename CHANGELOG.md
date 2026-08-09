@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-04-24
+
+- Changelog update - `v0.0.8` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/46
+- Add CLAUDE.md with build commands and architecture overview by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/47
+- Bump IntelliJ Platform plugin and standardize version catalog naming by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/50
+- Upgrade pluginSinceBuild to 261 (Android Studio Quail 1) by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/51
+- feat: add exclusion patterns and path-based glob matching by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/52
+- feat: extend path filter to non-Gradle-module folders by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/53
+- feat: add right-click menu to include directory in file group by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/54
+- fix: externalize all hardcoded UI strings to i18n bundle by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/55
+- Release v0.0.9 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/56
+
 ## [0.0.8] - 2026-02-12
 
 - Changelog update - `v0.0.7` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/41
@@ -68,7 +80,8 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.8...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.9...HEAD
+[0.0.9]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.5...v0.0.6
