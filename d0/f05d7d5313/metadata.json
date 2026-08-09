@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "d0f05d7d5313",
+  "strategy": "manual-commit",
+  "branch": "refactor/replace-deprecated-list-cell-renderer",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/main/kotlin/com/z8dn/plugins/a2pt/settings/ProjectFileGroupDialog.kt"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d0/f05d7d5313/0/metadata.json",
+      "transcript": "/d0/f05d7d5313/0/full.jsonl",
+      "compact_transcript": "/d0/f05d7d5313/0/transcript.jsonl",
+      "content_hash": "/d0/f05d7d5313/0/content_hash.txt",
+      "prompt": "/d0/f05d7d5313/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 15333,
+    "cache_read_tokens": 741046,
+    "output_tokens": 5443,
+    "api_call_count": 12
+  }
+}
