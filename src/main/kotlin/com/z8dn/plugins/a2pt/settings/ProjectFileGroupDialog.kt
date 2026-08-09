@@ -236,7 +236,9 @@ class ProjectFileGroupDialog(
                         .apply { foreground = NamedColorUtil.getInactiveTextColor() }
                 )
                 trailer.add(ComboBox(availableProjects.toTypedArray()).apply {
-                    renderer = textListCellRenderer("") { it.name }
+                    // The nullValue overload of textListCellRenderer is @ApiStatus.Internal and
+                    // trips verifyPlugin; this one is not, so it handles the null itself.
+                    renderer = textListCellRenderer<Project?> { it?.name.orEmpty() }
                     selectedItem = previewProject
                     addActionListener {
                         previewProject = selectedItem as? Project
