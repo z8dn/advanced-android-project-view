@@ -1,0 +1,24 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "05e7f00cbff4",
+  "strategy": "manual-commit",
+  "branch": "ci/revert-buildkite-migration",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/05/e7f00cbff4/0/metadata.json",
+      "transcript": "/05/e7f00cbff4/0/full.jsonl",
+      "compact_transcript": "/05/e7f00cbff4/0/transcript.jsonl",
+      "content_hash": "/05/e7f00cbff4/0/content_hash.txt",
+      "prompt": "/05/e7f00cbff4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 142,
+    "cache_creation_tokens": 146962,
+    "cache_read_tokens": 5913257,
+    "output_tokens": 44648,
+    "api_call_count": 77
+  }
+}
