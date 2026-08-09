@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
   <a href="https://plugins.jetbrains.com/plugin/29829-advanced-android-project-tree"><img alt="JetBrains Plugin" src="https://img.shields.io/badge/JetBrains-Plugin-orange.svg"/></a>
-  <a href="https://github.com/z8dn/advanced-android-project-view/actions"><img alt="Build" src="https://github.com/z8dn/advanced-android-project-view/workflows/Build/badge.svg"/></a>
+  <a href="https://github.com/z8dn/advanced-android-project-view/actions"><img alt="Build" src="https://github.com/z8dn/advanced-android-project-view/actions/workflows/build.yml/badge.svg?branch=main"/></a>
 </p>
 
 <!-- Plugin description -->
