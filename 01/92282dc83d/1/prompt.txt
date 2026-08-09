@@ -1,0 +1,25 @@
+previously, before moving to buildkite, i need to trigger a workflow on github action to do the deployment/release. But how can i do it now given it's on buildkite ?
+
+---
+
+check this PR https://github.com/z8dn/advanced-android-project-view/pull/48/changes#diff-87db21a973eed4fef5f32b267aa60fcee5cbdf03c67fafdc2a9b553bb0b15f34, the workflow .github/workflows/release.yml. Is it migrated to buildkite ?
+
+---
+
+but i dont see this step in buildkite, how can i trigger it
+
+---
+
+besides of the publish plugin. there are 2 more step is broken ?
+
+---
+
+so now if i want to test, i just need to create a tag ?
+
+---
+
+ok can u try pushing a tag 0.0.10 at this point
+
+---
+
+wait, there is already a v0.0.10 draft release. make use of it

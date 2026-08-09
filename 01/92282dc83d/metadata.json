@@ -3,8 +3,10 @@
   "checkpoint_id": "0192282dc83d",
   "strategy": "manual-commit",
   "branch": "ci/revert-publish-to-github-actions",
-  "checkpoints_count": 1,
-  "files_touched": null,
+  "checkpoints_count": 7,
+  "files_touched": [
+    ".buildkite/pipeline.yml"
+  ],
   "sessions": [
     {
       "metadata": "/01/92282dc83d/0/metadata.json",
@@ -12,13 +14,20 @@
       "compact_transcript": "/01/92282dc83d/0/transcript.jsonl",
       "content_hash": "/01/92282dc83d/0/content_hash.txt",
       "prompt": "/01/92282dc83d/0/prompt.txt"
+    },
+    {
+      "metadata": "/01/92282dc83d/1/metadata.json",
+      "transcript": "/01/92282dc83d/1/full.jsonl",
+      "compact_transcript": "/01/92282dc83d/1/transcript.jsonl",
+      "content_hash": "/01/92282dc83d/1/content_hash.txt",
+      "prompt": "/01/92282dc83d/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 142,
-    "cache_creation_tokens": 146962,
-    "cache_read_tokens": 5913257,
-    "output_tokens": 44648,
-    "api_call_count": 77
+    "input_tokens": 3615,
+    "cache_creation_tokens": 238684,
+    "cache_read_tokens": 10631716,
+    "output_tokens": 89564,
+    "api_call_count": 139
   }
 }
