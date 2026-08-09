@@ -65,22 +65,23 @@ CI is a deliberate hybrid, not a single system:
   distribution next to Qodana's own analyzer JVM. That needs far more memory
   than the Buildkite agents have, and GitHub's runners provide it free.
 
-Two pinned versions that look wrong and are not:
+One pinned version looks wrong and is not:
 
 - `qodana-action@v2026.2` drives `linter: jetbrains/qodana-jvm-community:2025.3`.
   The mismatch is intentional. Older actions fail Gradle import with
   `Invalid Gradle JDK configuration found`; bumping the linter to match the
   action also fails. This pairing is the one that works.
-- `.idea/gradle.xml` pins `gradleJvm` to `jbr-17` while the project targets 21.
-  This looks like the cause of the error above and is not — changing it does not
-  help, and Qodana passes with it as-is.
+
+`.idea/gradle.xml` used to pin `gradleJvm` to `jbr-17` while the project
+targeted 21. That pin was never the cause of the error above — Qodana passed
+with it either way — so it now tracks the toolchain at `jbr-21`.
 
 CI-only Gradle settings belong in `gradle/ci.properties`, never in
 `gradle.properties`, so local builds keep their own tuning.
 
 ## Dependencies & Compatibility
-- Kotlin 2.3.0, JDK 21
-- IntelliJ Platform Gradle Plugin 2.14.0
+- Kotlin 2.4.10, JDK 21
+- IntelliJ Platform Gradle Plugin 2.18.1
 - Target: Android Studio Otter 3 Feature Drop (2025.2.3.9) and later
 - Bundled plugins used: `com.intellij.gradle`, `org.jetbrains.android`, `com.intellij.java`
 - No external runtime dependencies
