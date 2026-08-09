@@ -1,0 +1,1 @@
+can u spawn a branch to upgrade versions ? So version in @../advanced-android-project-view-bump-intellij-platform-plugin/gradle/libs.versions.toml, JBR version, the jetbrain plugin version and qodana version as @../advanced-android-project-view-bump-intellij-platform-plugin/gradle/libs.versions.toml

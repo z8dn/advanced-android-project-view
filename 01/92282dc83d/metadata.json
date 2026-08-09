@@ -1,0 +1,24 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "0192282dc83d",
+  "strategy": "manual-commit",
+  "branch": "ci/revert-publish-to-github-actions",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/01/92282dc83d/0/metadata.json",
+      "transcript": "/01/92282dc83d/0/full.jsonl",
+      "compact_transcript": "/01/92282dc83d/0/transcript.jsonl",
+      "content_hash": "/01/92282dc83d/0/content_hash.txt",
+      "prompt": "/01/92282dc83d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 142,
+    "cache_creation_tokens": 146962,
+    "cache_read_tokens": 5913257,
+    "output_tokens": 44648,
+    "api_call_count": 77
+  }
+}
