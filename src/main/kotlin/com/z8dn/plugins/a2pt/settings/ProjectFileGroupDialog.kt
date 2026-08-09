@@ -19,7 +19,6 @@ import com.intellij.ui.ColoredTableCellRenderer
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBCheckBox
@@ -27,6 +26,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.listCellRenderer.textListCellRenderer
 import com.intellij.ui.table.JBTable
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.ui.AsyncProcessIcon
@@ -236,7 +236,9 @@ class ProjectFileGroupDialog(
                         .apply { foreground = NamedColorUtil.getInactiveTextColor() }
                 )
                 trailer.add(ComboBox(availableProjects.toTypedArray()).apply {
-                    renderer = SimpleListCellRenderer.create("") { it.name }
+                    // The nullValue overload of textListCellRenderer is @ApiStatus.Internal and
+                    // trips verifyPlugin; this one is not, so it handles the null itself.
+                    renderer = textListCellRenderer<Project?> { it?.name.orEmpty() }
                     selectedItem = previewProject
                     addActionListener {
                         previewProject = selectedItem as? Project
