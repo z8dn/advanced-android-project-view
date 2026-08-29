@@ -1,6 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import java.io.File
 
 plugins {
     id("java") // Java support
@@ -166,7 +167,7 @@ tasks {
             // Also surface it in the Actions run summary, which is readable without scrolling a
             // 700-line log past a CI uploader's environment dump.
             System.getenv("GITHUB_STEP_SUMMARY")?.let { summary ->
-                java.io.File(summary).appendText("### A2PT index benchmark\n\n```\n$table```\n")
+                File(summary).appendText("### A2PT index benchmark\n\n```\n$table```\n")
             }
         }
     }
