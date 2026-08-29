@@ -104,9 +104,9 @@ class ProjectFileGroupIndex(private val project: Project) {
     private fun build(stamp: Int): Snapshot {
         val startedAt = System.nanoTime()
         val groups = AndroidViewSettings.getInstance().projectFileGroups.toList()
-        val pool = AndroidViewNodeUtils.getAllProjectFilesInProject(project)
-
-        val byModule = AndroidViewNodeUtils.attributeToModules(project, pool, groups)
+        val swept = AndroidViewNodeUtils.sweep(project, groups)
+        val pool = swept.pool
+        val byModule = swept.byModule
 
         if (LOG.isDebugEnabled) {
             val elapsedMs = (System.nanoTime() - startedAt) / 1_000_000
