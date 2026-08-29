@@ -144,12 +144,12 @@ class ProjectFileGroupIndex(private val project: Project) {
         @JvmStatic
         fun getInstance(project: Project): ProjectFileGroupIndex = project.service()
 
-        /** Drops the cached sweep for every open project whose content the change could affect. */
-        private fun invalidateProjectsContaining(path: String) {
+        /** Drops the cached sweep for every open project any of [paths] could affect. */
+        private fun invalidateProjectsContaining(paths: List<String>) {
             for (project in ProjectManager.getInstance().openProjects) {
                 if (project.isDisposed) continue
                 val basePath = project.basePath
-                if (basePath == null || path.startsWith(basePath)) {
+                if (basePath == null || paths.any { it.startsWith(basePath) }) {
                     getInstance(project).invalidate()
                 }
             }
@@ -178,7 +178,7 @@ class ProjectFileGroupIndex(private val project: Project) {
             val paths = relevant.map { it.path }
             return object : AsyncFileListener.ChangeApplier {
                 override fun afterVfsChange() {
-                    paths.forEach { invalidateProjectsContaining(it) }
+                    invalidateProjectsContaining(paths)
                 }
             }
         }
