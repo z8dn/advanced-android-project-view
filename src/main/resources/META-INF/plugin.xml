@@ -33,7 +33,16 @@
 
         <!-- Zoo Scopes: Makes scopes available in ScopeChooserCombo -->
         <searchScopesProvider implementation="com.z8dn.plugins.a2pt.scopes.ProjectFileGroupScopeProvider"/>
+
+        <!-- Drops the cached file sweep when files are added, removed, renamed or moved -->
+        <vfs.asyncListener implementation="com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex$VfsInvalidator"/>
     </extensions>
+
+    <projectListeners>
+        <!-- Drops the cached file sweep when a Gradle sync rewrites the module graph -->
+        <listener class="com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex$RootChangeInvalidator"
+                  topic="com.intellij.openapi.roots.ModuleRootListener"/>
+    </projectListeners>
 
     <!-- Android View Node Providers -->
     <extensions defaultExtensionNs="com.android.tools.idea.navigator">

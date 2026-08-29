@@ -4,6 +4,7 @@ import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
@@ -73,21 +74,82 @@ object AndroidViewNodeUtils {
     ): Boolean = groups.any { matchesPatterns(fileName, relativePath, it.patterns) }
 
     /**
+     * One sweep's worth of discovery: the shared candidate [pool], and the per-module
+     * attribution derived from the same walk.
+     */
+    class ProjectFileSweep(
+        val pool: List<Pair<VirtualFile, String>>,
+        val byModule: Map<Module, List<VirtualFile>>
+    )
+
+    /**
+     * Walks the project once, producing both the candidate pool and the per-module attribution.
+     *
+     * Attribution comes from the walk itself — a file is claimed by the module whose content root
+     * it was found directly under — rather than from re-testing every file against every module
+     * afterwards. That is what removes the quadratic term: the previous shape swept the whole
+     * project once per module and then ran up to `2 x files x modules` containment checks.
+     *
+     * [discover] examines the *immediate* children of each content root, so a nested content
+     * root's files reach the inner module only — exactly what
+     * [ModuleUtilCore.moduleContainsFile] reported before. Files found by the path-pattern scan
+     * sit outside every content root by definition, so they cost one
+     * [ModuleUtilCore.findModuleForFile] each.
+     *
+     * One deliberate narrowing: the old filter also accepted a file reachable through a module's
+     * *library* roots. Project files matched by these patterns (READMEs, gradle scripts, docs) do
+     * not live in library roots, and treating a library file as a module's own project file was
+     * never intended.
+     *
+     * Must be called inside a read action: this touches the VFS.
+     */
+    fun sweep(project: Project, groups: List<ProjectFileGroup>): ProjectFileSweep {
+        val inclusionPatterns = groups.flatMap { it.patterns }.filter { !it.startsWith("!") }
+        val discovered = discover(project, inclusionPatterns)
+        if (discovered.isEmpty()) return ProjectFileSweep(emptyList(), emptyMap())
+
+        val byModule = mutableMapOf<Module, MutableList<VirtualFile>>()
+        for (candidate in discovered) {
+            if (!matchesAnyGroup(candidate.file.name, candidate.relativePath, groups)) continue
+
+            // A path-pattern hit sits outside every content root by definition, so it is the only
+            // case that has to ask which module owns it.
+            val owner = candidate.contentRootOwner
+                ?: ModuleUtilCore.findModuleForFile(candidate.file, project)
+                ?: continue
+            byModule.getOrPut(owner) { mutableListOf() }.add(candidate.file)
+        }
+
+        return ProjectFileSweep(
+            pool = discovered.distinctBy { it.file }.map { it.file to it.relativePath },
+            byModule = byModule.mapValues { (_, files) -> files.distinct() }
+        )
+    }
+
+    /**
      * The project files to show inside [module] when `showProjectFilesInModule` is enabled:
      * everything some group claims that this module also contains.
+     *
+     * This is the uncached path. The tree goes through
+     * [com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex] instead, which keeps one [sweep] rather
+     * than running one per module.
      *
      * @return List of project files (VirtualFile) belonging to this module
      */
     fun getProjectFilesForModule(module: Module): List<VirtualFile> {
         val groups = AndroidViewSettings.getInstance().projectFileGroups
-        return getAllProjectFilesInProject(module.project)
-            .filter { (file, relativePath) -> matchesAnyGroup(file.name, relativePath, groups) }
-            .filter { (file, _) ->
-                ModuleUtilCore.moduleContainsFile(module, file, true) ||
-                    ModuleUtilCore.moduleContainsFile(module, file, false)
-            }
-            .map { (file, _) -> file }
+        return sweep(module.project, groups).byModule[module] ?: emptyList()
     }
+
+    /**
+     * Whether [path] lies under one of the directories the sweep never descends into.
+     *
+     * Exposed for the index's VFS listener, which must not invalidate a cached sweep because of
+     * a change the sweep would never have seen — a Gradle build writing into `build/` being the
+     * case that matters.
+     */
+    fun isInIgnoredDirectory(path: String): Boolean =
+        path.splitToSequence('/').any { it in IGNORED_SCAN_DIRECTORIES }
 
     /**
      * Checks whether [pattern] compiles as a glob. A pattern that does not compile can
@@ -167,18 +229,6 @@ object AndroidViewNodeUtils {
     }
 
     /**
-     * Gets all project files from the entire project that match configured patterns,
-     * using the union of every group's patterns. See [collectMatchingFiles].
-     *
-     * @param project The project to search in
-     * @return List of (VirtualFile, relativePath) pairs for all matching files
-     */
-    fun getAllProjectFilesInProject(project: Project): List<Pair<VirtualFile, String>> {
-        val settings = AndroidViewSettings.getInstance()
-        return collectMatchingFiles(project, settings.projectFileGroups.flatMap { it.patterns })
-    }
-
-    /**
      * The candidate pool for a given pattern union: every file reachable from a module
      * content root or from a path-based pattern's directory prefix that matches at least
      * one inclusion pattern.
@@ -191,40 +241,62 @@ object AndroidViewNodeUtils {
      *
      * @return List of (VirtualFile, relativePath) pairs
      */
-    fun collectMatchingFiles(project: Project, patterns: List<String>): List<Pair<VirtualFile, String>> {
-        if (patterns.isEmpty()) return emptyList()
+    fun collectMatchingFiles(project: Project, patterns: List<String>): List<Pair<VirtualFile, String>> =
+        discover(project, patterns.filter { !it.startsWith("!") })
+            .distinctBy { it.file }
+            .map { it.file to it.relativePath }
 
-        val inclusionPatterns = patterns.filter { !it.startsWith("!") }
+    /** A candidate file, with the module whose content root it was found directly under. */
+    private class Discovered(
+        val file: VirtualFile,
+        val relativePath: String,
+        /** null when the file came from a path-pattern scan rather than a content root. */
+        val contentRootOwner: Module?
+    )
+
+    /**
+     * The one walk [collectMatchingFiles] and [sweep] are both built on.
+     *
+     * Keeping it single is what stops the tree and the group preview drifting apart: they need
+     * different projections of the same discovery, not two implementations of it. A file found
+     * under more than one content root appears once per owning module, so callers that care about
+     * attribution see all of them and callers that want the pool deduplicate by file.
+     *
+     * Must be called inside a read action: this touches the VFS.
+     */
+    private fun discover(project: Project, inclusionPatterns: List<String>): List<Discovered> {
         if (inclusionPatterns.isEmpty()) return emptyList()
 
         val projectBaseDir = project.basePath
             ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
             ?: return emptyList()
-        val result = mutableListOf<Pair<VirtualFile, String>>()
-        val moduleManager = com.intellij.openapi.module.ModuleManager.getInstance(project)
 
-        for (module in moduleManager.modules) {
+        val result = mutableListOf<Discovered>()
+        val seen = mutableSetOf<VirtualFile>()
+
+        for (module in ModuleManager.getInstance(project).modules) {
             if (module.isDisposed) continue
 
-            val contentRoots = ModuleRootManager.getInstance(module).contentRoots
-            for (root in contentRoots) {
+            for (root in ModuleRootManager.getInstance(module).contentRoots) {
+                // Immediate children only, which is why a nested content root's files reach the
+                // inner module alone.
                 for (child in root.children) {
-                    if (child.isValid && !child.isDirectory) {
-                        val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
-                        if (matchesPatterns(child.name, relativePath, inclusionPatterns)) {
-                            result.add(child to relativePath)
-                        }
-                    }
+                    if (!child.isValid || child.isDirectory) continue
+
+                    val relativePath = VfsUtil.getRelativePath(child, projectBaseDir, '/') ?: child.name
+                    if (!matchesPatterns(child.name, relativePath, inclusionPatterns)) continue
+
+                    seen.add(child)
+                    result.add(Discovered(child, relativePath, module))
                 }
             }
         }
 
         // Also scan directories pointed to directly by path-based patterns.
         // This handles non-Gradle-module folders (e.g. a top-level "docs/" folder).
-        val seen = result.mapTo(HashSet()) { it.first }
         for (entry in getFilesFromPathBasedPatterns(projectBaseDir, inclusionPatterns)) {
             if (seen.add(entry.first)) {
-                result.add(entry)
+                result.add(Discovered(entry.first, entry.second, null))
             }
         }
 

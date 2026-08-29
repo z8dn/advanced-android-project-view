@@ -10,6 +10,7 @@ import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.module.Module
 import com.intellij.psi.PsiManager
+import com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex
 import com.z8dn.plugins.a2pt.nodes.GradleModuleWithProjectFiles
 import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
@@ -63,7 +64,7 @@ class AdvancedAndroidViewProvider : AndroidViewNodeProvider {
         // Only show project files in modules if showProjectFilesInModule is true
         if (AndroidViewNodeUtils.showProjectFilesInModule()) {
             val psiManager = PsiManager.getInstance(project)
-            AndroidViewNodeUtils.getProjectFilesForModule(module).forEach { file ->
+            ProjectFileGroupIndex.getInstance(project).filesFor(module).forEach { file ->
                 val psiFile = psiManager.findFile(file)
                 if (psiFile != null) {
                     // No qualifier needed when files are shown in their own modules

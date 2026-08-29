@@ -1,6 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import java.io.File
 
 plugins {
     id("java") // Java support
@@ -61,6 +62,17 @@ dependencies {
 
         testFramework(TestFrameworkType.Platform)
     }
+}
+
+// The IntelliJ Platform runs on JetBrains' fork of kotlinx-coroutines, which adds
+// runBlockingWithParallelismCompensation. Compose and Jewel pull stock kotlinx-coroutines onto the
+// test runtime classpath, where it shadows that fork and every platform test fixture dies in
+// TestApplication init with:
+//   NoSuchMethodError: kotlinx.coroutines.BuildersKt.runBlockingWithParallelismCompensation
+// Drop the stock artifact so the platform's own coroutines serve the tests.
+configurations.named("testRuntimeClasspath") {
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
@@ -131,6 +143,33 @@ changelog {
 tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
+    }
+
+    test {
+        // Without this Gradle logs only "java.lang.NoSuchMethodError at Foo.kt:49", which is not
+        // enough to diagnose a failure that only reproduces on CI.
+        testLogging {
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            events("failed")
+            showStackTraces = true
+        }
+
+        // ProjectFileIndexBenchmarkTest writes its measurements here; echoing them at the end of
+        // the task puts them where a CI log is actually readable, rather than somewhere in the
+        // middle of every test's stdout.
+        val benchmarkReport = layout.buildDirectory.file("reports/a2pt-benchmark.txt")
+        systemProperty("a2pt.benchmark.report", benchmarkReport.get().asFile.absolutePath)
+        doLast {
+            val report = benchmarkReport.get().asFile
+            if (!report.exists()) return@doLast
+            val table = report.readText()
+            println(System.lineSeparator() + table)
+            // Also surface it in the Actions run summary, which is readable without scrolling a
+            // 700-line log past a CI uploader's environment dump.
+            System.getenv("GITHUB_STEP_SUMMARY")?.let { summary ->
+                File(summary).appendText("### A2PT index benchmark\n\n```\n$table```\n")
+            }
+        }
     }
 
     publishPlugin {

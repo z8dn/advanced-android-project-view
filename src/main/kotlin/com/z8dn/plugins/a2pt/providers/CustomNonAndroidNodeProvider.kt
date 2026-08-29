@@ -1,5 +1,6 @@
 package com.z8dn.plugins.a2pt.providers
 
+import com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex
 import com.z8dn.plugins.a2pt.nodes.ProjectFileNode
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
 
@@ -39,7 +40,7 @@ class CustomNonAndroidNodeProvider : TreeStructureProvider {
         val psiManager = PsiManager.getInstance(project)
 
         // Get project files for this module
-        val projectFiles = AndroidViewNodeUtils.getProjectFilesForModule(module)
+        val projectFiles = ProjectFileGroupIndex.getInstance(project).filesFor(module)
 
         // Add ProjectFileNode for each file (no qualifier needed when files are in their own modules)
         projectFiles.forEach { file ->

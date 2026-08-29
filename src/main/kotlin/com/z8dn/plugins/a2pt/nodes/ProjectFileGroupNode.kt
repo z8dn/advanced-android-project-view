@@ -18,12 +18,16 @@ import javax.swing.Icon
  * A top-level group node that displays project files matching a specific ProjectFileGroup.
  * This node appears at the project root level when showProjectFilesInModule is false.
  * Each instance represents one ProjectFileGroup with its groupName and patterns.
+ *
+ * @param groupFiles the files this group claims, already filtered by
+ *   [com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex] with the group's exclusions applied,
+ *   each paired with its path relative to the project root
  */
 class ProjectFileGroupNode(
     private val myProject: Project,
     private val settings: ViewSettings,
     private val fileGroup: ProjectFileGroup,
-    private val allProjectFiles: List<Pair<VirtualFile, String>>
+    private val groupFiles: List<Pair<VirtualFile, String>>
 ) : AbstractTreeNode<String>(myProject, fileGroup.groupName) {
 
     override fun getChildren(): Collection<AbstractTreeNode<*>> {
@@ -35,12 +39,7 @@ class ProjectFileGroupNode(
         val result = mutableListOf<AbstractTreeNode<*>>()
         val psiManager = PsiManager.getInstance(myProject)
 
-        for ((file, relativePath) in allProjectFiles) {
-            // Only include files that match this group's patterns
-            if (!AndroidViewNodeUtils.matchesPatterns(file.name, relativePath, fileGroup.patterns)) {
-                continue
-            }
-
+        for ((file, relativePath) in groupFiles) {
             val psiFile = psiManager.findFile(file) ?: continue
 
             // Find which module contains this file (may be null for non-module folders)

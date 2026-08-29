@@ -4,6 +4,7 @@ import com.android.tools.idea.navigator.nodes.AndroidViewProjectNode
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
+import com.z8dn.plugins.a2pt.index.ProjectFileGroupIndex
 import com.z8dn.plugins.a2pt.nodes.ProjectFileGroupNode
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
@@ -38,8 +39,8 @@ class ProjectFilesTreeStructureProvider : TreeStructureProvider {
         // Get configured project file groups from settings
         val projectFileGroups = AndroidViewSettings.getInstance().projectFileGroups
 
-        // Compute all project files once to avoid repeated file system traversal
-        val allProjectFiles = AndroidViewNodeUtils.getAllProjectFilesInProject(project)
+        // One shared, cached sweep behind this; each group's files are already filtered
+        val index = ProjectFileGroupIndex.getInstance(project)
 
         // Add a ProjectFileGroupNode for each configured group
         for (fileGroup in projectFileGroups) {
@@ -47,7 +48,7 @@ class ProjectFilesTreeStructureProvider : TreeStructureProvider {
                 project,
                 settings ?: parent.settings,
                 fileGroup,
-                allProjectFiles
+                index.filesFor(fileGroup)
             )
 
             // Only add if there are actually project files to show in this group
