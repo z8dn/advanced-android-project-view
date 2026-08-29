@@ -157,6 +157,48 @@ class ProjectFileIndexBehaviorTest : HeavyPlatformTestCase() {
 
     // endregion
 
+    // region cache invalidation
+
+    /**
+     * Editing a group must invalidate the cached sweep even when the old and new patterns share a
+     * hash. `"Aa"` and `"BB"` both hash to 2112, so a stamp-based cache key would keep serving the
+     * pool discovered for the old patterns until something unrelated invalidated it.
+     */
+    fun testGroupEditWithACollidingHashStillRebuilds() {
+        val index = ProjectFileGroupIndex.getInstance(project)
+
+        setGroups(group("Docs", "Aa"))
+        ReadAction.run<RuntimeException> { index.pool() }
+        val rebuildsAfterFirstRead = index.rebuildCount()
+
+        setGroups(group("Docs", "BB"))
+        ReadAction.run<RuntimeException> { index.pool() }
+
+        assertTrue(
+            "a group edit whose patterns collide by hash must still rebuild the index",
+            index.rebuildCount() > rebuildsAfterFirstRead
+        )
+    }
+
+    /** Reading twice with nothing changed must not sweep twice — the point of the cache. */
+    fun testRepeatedReadWithNoChangeDoesNotRebuild() {
+        val index = ProjectFileGroupIndex.getInstance(project)
+
+        setGroups(group("Docs", "*.md"))
+        ReadAction.run<RuntimeException> { index.pool() }
+        val rebuildsAfterFirstRead = index.rebuildCount()
+
+        ReadAction.run<RuntimeException> { index.pool() }
+
+        assertEquals(
+            "an unchanged read must be served from the snapshot",
+            rebuildsAfterFirstRead,
+            index.rebuildCount()
+        )
+    }
+
+    // endregion
+
     /**
      * The project's base directory, created on disk first.
      *

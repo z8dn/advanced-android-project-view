@@ -46,7 +46,8 @@ class ProjectFileGroupIndex(private val project: Project) {
     private class Snapshot(
         val pool: List<Pair<VirtualFile, String>>,
         val byModule: Map<Module, List<VirtualFile>>,
-        val groupsStamp: Int
+        /** The group definitions this was swept for, compared structurally on every read. */
+        val groups: List<ProjectFileGroup>
     )
 
     private val snapshot = AtomicReference<Snapshot?>(null)
@@ -93,16 +94,16 @@ class ProjectFileGroupIndex(private val project: Project) {
      * class exists to remove.
      */
     private fun current(): Snapshot {
-        val stamp = groupsStamp()
-        snapshot.get()?.let { if (it.groupsStamp == stamp) return it }
+        val groups = currentGroupDefinitions()
+        snapshot.get()?.let { if (it.groups == groups) return it }
 
         synchronized(rebuildLock) {
             // another thread may have rebuilt while this one waited on the lock
-            snapshot.get()?.let { if (it.groupsStamp == stamp) return it }
+            snapshot.get()?.let { if (it.groups == groups) return it }
 
             // A cancelled read action must not leave a partial sweep cached, so this deliberately
             // does not catch ProcessCanceledException: it propagates and `snapshot` stays null.
-            return build(stamp).also { snapshot.set(it) }
+            return build(groups).also { snapshot.set(it) }
         }
     }
 
@@ -110,10 +111,10 @@ class ProjectFileGroupIndex(private val project: Project) {
     @TestOnly
     fun rebuildCount(): Int = rebuilds.get()
 
-    private fun build(stamp: Int): Snapshot {
+    /** Sweeps for exactly the [groups] the caller compared against, never a fresh read of them. */
+    private fun build(groups: List<ProjectFileGroup>): Snapshot {
         val startedAt = System.nanoTime()
         rebuilds.incrementAndGet()
-        val groups = AndroidViewSettings.getInstance().projectFileGroups.toList()
         val swept = AndroidViewNodeUtils.sweep(project, groups)
         val pool = swept.pool
         val byModule = swept.byModule
@@ -125,21 +126,26 @@ class ProjectFileGroupIndex(private val project: Project) {
                     "${groups.size} group(s), ${byModule.size} module(s) in ${elapsedMs}ms"
             )
         }
-        return Snapshot(pool, byModule, stamp)
+        return Snapshot(pool, byModule, groups)
     }
 
     /**
-     * A content hash of the configured groups, not a modification counter.
+     * A deep copy of the configured groups, compared structurally rather than by hash.
      *
      * [AndroidViewSettings.projectFileGroups] is a `MutableList` of objects holding their own
      * `MutableList` of patterns, and every caller mutates it in place — the settings dialog
      * clears and refills it, and the project-view popup actions edit the lists directly. A
-     * counter would have to be bumped at each of those sites and would rot the first time
-     * someone added another. Hashing a few dozen strings on each read cannot be forgotten.
+     * modification counter would have to be bumped at each of those sites and would rot the first
+     * time someone added another, so the cache compares definitions instead.
+     *
+     * Those definitions are compared with `==`, not a hash: `"Aa"` and `"BB"` share a
+     * `String.hashCode()`, so an Int stamp would silently serve a pool discovered for the old
+     * patterns. Copying is what makes the comparison meaningful — holding the live objects would
+     * compare a list against itself after it was mutated in place.
      */
-    private fun groupsStamp(): Int =
+    private fun currentGroupDefinitions(): List<ProjectFileGroup> =
         AndroidViewSettings.getInstance().projectFileGroups
-            .fold(1) { acc, group -> acc * 31 + group.groupName.hashCode() * 31 + group.patterns.hashCode() }
+            .map { ProjectFileGroup(it.groupName, it.patterns.toMutableList()) }
 
     /**
      * A snapshot can briefly outlive a deletion — the VFS event fires before the listener runs —
