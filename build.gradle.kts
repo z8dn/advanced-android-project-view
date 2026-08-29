@@ -60,6 +60,9 @@ dependencies {
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
         testFramework(TestFrameworkType.Platform)
+        // HeavyPlatformTestCase creates real modules with content roots, which needs the Java
+        // plugin's test framework on top of the platform one.
+        testFramework(TestFrameworkType.Plugin.Java)
     }
 }
 
@@ -131,6 +134,16 @@ changelog {
 tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
+    }
+
+    test {
+        // Without this Gradle logs only "java.lang.NoSuchMethodError at Foo.kt:49", which is not
+        // enough to diagnose a failure that only reproduces on CI.
+        testLogging {
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            events("failed")
+            showStackTraces = true
+        }
     }
 
     publishPlugin {

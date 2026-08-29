@@ -1,6 +1,6 @@
 package com.z8dn.plugins.a2pt.index
 
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
@@ -176,15 +176,17 @@ class ProjectFileIndexBehaviorTest : HeavyPlatformTestCase() {
         ProjectFileGroup(name, patterns.toMutableList())
 
     /** Relative paths of everything [AndroidViewNodeUtils.collectMatchingFiles] discovers. */
-    private fun collect(vararg patterns: String): Set<String> = runReadAction {
-        AndroidViewNodeUtils.collectMatchingFiles(project, patterns.toList())
-            .mapTo(mutableSetOf()) { (_, relativePath) -> relativePath }
-    }
+    private fun collect(vararg patterns: String): Set<String> =
+        ReadAction.compute<Set<String>, RuntimeException> {
+            AndroidViewNodeUtils.collectMatchingFiles(project, patterns.toList())
+                .mapTo(mutableSetOf()) { (_, relativePath) -> relativePath }
+        }
 
     /** Relative paths of the files the tree would show inside [module]. */
-    private fun filesFor(module: Module): Set<String> = runReadAction {
-        val base = baseDir()
-        AndroidViewNodeUtils.getProjectFilesForModule(module)
-            .mapTo(mutableSetOf()) { file -> VfsUtil.getRelativePath(file, base, '/') ?: file.name }
-    }
+    private fun filesFor(module: Module): Set<String> =
+        ReadAction.compute<Set<String>, RuntimeException> {
+            val base = baseDir()
+            AndroidViewNodeUtils.getProjectFilesForModule(module)
+                .mapTo(mutableSetOf()) { file -> VfsUtil.getRelativePath(file, base, '/') ?: file.name }
+        }
 }
