@@ -15,6 +15,8 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
+import org.jetbrains.annotations.TestOnly
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -49,6 +51,9 @@ class ProjectFileGroupIndex(private val project: Project) {
 
     private val snapshot = AtomicReference<Snapshot?>(null)
     private val rebuildLock = Any()
+
+    /** How many sweeps this index has actually performed. The only observable proof it caches. */
+    private val rebuilds = AtomicInteger()
 
     /** Every file some group claims, paired with its path relative to the project root. */
     fun pool(): List<Pair<VirtualFile, String>> = current().pool.filterValid()
@@ -101,8 +106,13 @@ class ProjectFileGroupIndex(private val project: Project) {
         }
     }
 
+    /** Sweeps performed since this index was created. */
+    @TestOnly
+    fun rebuildCount(): Int = rebuilds.get()
+
     private fun build(stamp: Int): Snapshot {
         val startedAt = System.nanoTime()
+        rebuilds.incrementAndGet()
         val groups = AndroidViewSettings.getInstance().projectFileGroups.toList()
         val swept = AndroidViewNodeUtils.sweep(project, groups)
         val pool = swept.pool

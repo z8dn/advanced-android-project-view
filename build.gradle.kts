@@ -151,6 +151,8 @@ tasks {
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             events("failed")
             showStackTraces = true
+            // the index benchmark prints its measurements; they are worthless if CI swallows them
+            showStandardStreams = true
         }
     }
 
