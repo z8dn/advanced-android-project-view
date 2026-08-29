@@ -68,7 +68,7 @@ data class PreviewResult(
  *
  * Exactness rests on three things, all handled here:
  *
- * 1. **The candidate pool is shared across groups.** `getAllProjectFilesInProject` derives its
+ * 1. **The candidate pool is shared across groups.** `collectMatchingFiles` derives its
  *    directory-prefix scan from the union of *every* group's patterns, so a group whose only
  *    pattern is `*.md` still shows `docs/adr/0001.md` — but only because some other group
  *    carries a recursive `docs` pattern. The pool must therefore be built from the sibling

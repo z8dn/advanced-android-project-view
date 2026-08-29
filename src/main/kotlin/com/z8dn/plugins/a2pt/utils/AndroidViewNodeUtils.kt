@@ -229,16 +229,6 @@ object AndroidViewNodeUtils {
     }
 
     /**
-     * Gets all project files from the entire project that match configured patterns,
-     * using the union of every group's patterns. See [collectMatchingFiles].
-     *
-     * @param project The project to search in
-     * @return List of (VirtualFile, relativePath) pairs for all matching files
-     */
-    fun getAllProjectFilesInProject(project: Project): List<Pair<VirtualFile, String>> =
-        sweep(project, AndroidViewSettings.getInstance().projectFileGroups).pool
-
-    /**
      * The candidate pool for a given pattern union: every file reachable from a module
      * content root or from a path-based pattern's directory prefix that matches at least
      * one inclusion pattern.
