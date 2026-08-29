@@ -160,7 +160,14 @@ tasks {
         systemProperty("a2pt.benchmark.report", benchmarkReport.get().asFile.absolutePath)
         doLast {
             val report = benchmarkReport.get().asFile
-            if (report.exists()) println(System.lineSeparator() + report.readText())
+            if (!report.exists()) return@doLast
+            val table = report.readText()
+            println(System.lineSeparator() + table)
+            // Also surface it in the Actions run summary, which is readable without scrolling a
+            // 700-line log past a CI uploader's environment dump.
+            System.getenv("GITHUB_STEP_SUMMARY")?.let { summary ->
+                java.io.File(summary).appendText("### A2PT index benchmark\n\n```\n$table```\n")
+            }
         }
     }
 

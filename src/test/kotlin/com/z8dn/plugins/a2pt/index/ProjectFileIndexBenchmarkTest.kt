@@ -127,6 +127,19 @@ class ProjectFileIndexBenchmarkTest : HeavyPlatformTestCase() {
         assertEquals("indexed path sweeps once per tree build", 1, coldSweeps)
         assertEquals("a rebuild with nothing changed sweeps not at all", 0, warmSweeps)
         assertTrue("old path runs containment checks per file per module", legacy.containmentChecks > 0)
+
+        // Encoded so that a green run *is* the evidence, rather than a number buried in a CI log.
+        // One sweep sees every content-root child once; the old path repeated that per module.
+        val filesPerSweep = legacy.filesVisited / legacy.sweeps
+        assertEquals("one sweep sees every module's files", MODULES * FILES_PER_MODULE, filesPerSweep)
+        assertEquals("old path re-walks them once per module", MODULES * filesPerSweep, legacy.filesVisited)
+
+        // Every matched file is tested against every module, so the check count grows with both.
+        val matchedFiles = MODULES * MATCHING_PER_MODULE
+        assertTrue(
+            "containment checks scale with files x modules (was ${legacy.containmentChecks})",
+            legacy.containmentChecks >= matchedFiles * MODULES
+        )
     }
 
     /**
