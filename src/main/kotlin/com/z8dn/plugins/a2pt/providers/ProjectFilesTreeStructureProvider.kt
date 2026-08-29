@@ -39,9 +39,8 @@ class ProjectFilesTreeStructureProvider : TreeStructureProvider {
         // Get configured project file groups from settings
         val projectFileGroups = AndroidViewSettings.getInstance().projectFileGroups
 
-        // One shared candidate pool for every group, rather than a sweep each
+        // One shared, cached sweep behind this; each group's files are already filtered
         val index = ProjectFileGroupIndex.getInstance(project)
-        val allProjectFiles = index.pool()
 
         // Add a ProjectFileGroupNode for each configured group
         for (fileGroup in projectFileGroups) {
@@ -49,7 +48,7 @@ class ProjectFilesTreeStructureProvider : TreeStructureProvider {
                 project,
                 settings ?: parent.settings,
                 fileGroup,
-                index.filesFor(fileGroup, allProjectFiles)
+                index.filesFor(fileGroup)
             )
 
             // Only add if there are actually project files to show in this group

@@ -90,6 +90,47 @@ object AndroidViewNodeUtils {
     }
 
     /**
+     * Attributes an already-computed candidate [pool] to the modules that contain each file,
+     * applying [groups]' exclusions on the way — the per-module equivalent of
+     * [getProjectFilesForModule], but sharing one sweep across every module instead of
+     * repeating it per module.
+     *
+     * Must be called inside a read action: this touches the VFS.
+     *
+     * @return module to the files the tree should show inside it
+     */
+    fun attributeToModules(
+        project: Project,
+        pool: List<Pair<VirtualFile, String>>,
+        groups: List<ProjectFileGroup>
+    ): Map<Module, List<VirtualFile>> {
+        val claimed = pool.filter { (file, relativePath) ->
+            matchesAnyGroup(file.name, relativePath, groups)
+        }
+        if (claimed.isEmpty()) return emptyMap()
+
+        return com.intellij.openapi.module.ModuleManager.getInstance(project).modules
+            .filterNot { it.isDisposed }
+            .associateWith { module ->
+                claimed.filter { (file, _) ->
+                    ModuleUtilCore.moduleContainsFile(module, file, true) ||
+                        ModuleUtilCore.moduleContainsFile(module, file, false)
+                }.map { (file, _) -> file }
+            }
+            .filterValues { it.isNotEmpty() }
+    }
+
+    /**
+     * Whether [path] lies under one of the directories the sweep never descends into.
+     *
+     * Exposed for the index's VFS listener, which must not invalidate a cached sweep because of
+     * a change the sweep would never have seen — a Gradle build writing into `build/` being the
+     * case that matters.
+     */
+    fun isInIgnoredDirectory(path: String): Boolean =
+        path.splitToSequence('/').any { it in IGNORED_SCAN_DIRECTORIES }
+
+    /**
      * Checks whether [pattern] compiles as a glob. A pattern that does not compile can
      * never match a file, which is otherwise indistinguishable from one that simply
      * matches nothing — the preview reports the two differently.
