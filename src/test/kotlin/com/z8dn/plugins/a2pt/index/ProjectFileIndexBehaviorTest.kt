@@ -11,6 +11,7 @@ import com.intellij.testFramework.VfsTestUtil
 import com.z8dn.plugins.a2pt.settings.AndroidViewSettings
 import com.z8dn.plugins.a2pt.settings.ProjectFileGroup
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
+import java.io.File
 
 /**
  * Pins the file discovery and per-module attribution the project tree is built from, against a
@@ -156,9 +157,19 @@ class ProjectFileIndexBehaviorTest : HeavyPlatformTestCase() {
 
     // endregion
 
-    private fun baseDir(): VirtualFile =
-        LocalFileSystem.getInstance().refreshAndFindFileByPath(project.basePath!!)
-            ?: error("project base dir not found: ${project.basePath}")
+    /**
+     * The project's base directory, created on disk first.
+     *
+     * HeavyPlatformTestCase sets `basePath` to a temp path but does not materialise the directory,
+     * so the VFS cannot resolve it until it exists. Everything in the fixture has to live under
+     * this directory, because the code under test derives every relative path from it.
+     */
+    private fun baseDir(): VirtualFile {
+        val path = project.basePath ?: error("project has no base path")
+        File(path).mkdirs()
+        return LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
+            ?: error("project base dir not found: $path")
+    }
 
     private fun moduleWithContentRoot(name: String, relativePath: String): Module {
         val module = createModule(name)
