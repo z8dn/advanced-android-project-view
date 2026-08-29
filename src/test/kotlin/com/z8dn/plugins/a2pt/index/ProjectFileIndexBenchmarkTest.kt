@@ -188,21 +188,30 @@ class ProjectFileIndexBenchmarkTest : HeavyPlatformTestCase() {
         warmMs: Double
     ) {
         val line = "-".repeat(78)
-        println(line)
-        println("A2PT index benchmark — $MODULES modules x $FILES_PER_MODULE files")
-        println(line)
-        println(String.format("%-34s %14s %12s %14s", "", "sweeps", "files seen", "containsFile"))
-        println(String.format("%-34s %14d %12d %14d",
+        val out = StringBuilder()
+        fun emit(text: String) { println(text); out.appendLine(text) }
+        emit(line)
+        emit("A2PT index benchmark — $MODULES modules x $FILES_PER_MODULE files")
+        emit(line)
+        emit(String.format("%-34s %14s %12s %14s", "", "sweeps", "files seen", "containsFile"))
+        emit(String.format("%-34s %14d %12d %14d",
             "before (sweep per module)", legacy.sweeps, legacy.filesVisited, legacy.containmentChecks))
-        println(String.format("%-34s %14d %12d %14d",
+        emit(String.format("%-34s %14d %12d %14d",
             "after  (first tree build)", coldSweeps, legacy.filesVisited / legacy.sweeps, 0))
-        println(String.format("%-34s %14d %12d %14d",
+        emit(String.format("%-34s %14d %12d %14d",
             "after  (rebuild, unchanged)", warmSweeps, 0, 0))
-        println(line)
-        println(String.format("wall clock: before %.1f ms | after cold %.1f ms | after warm %.1f ms",
+        emit(line)
+        emit(String.format("wall clock: before %.1f ms | after cold %.1f ms | after warm %.1f ms",
             legacy.elapsedMs, coldMs, warmMs))
-        println("(timings are indicative only and are never asserted)")
-        println(line)
+        emit("(timings are indicative only and are never asserted)")
+        emit(line)
+
+        // The build echoes this after the test task, so the numbers survive a CI log.
+        System.getProperty("a2pt.benchmark.report")?.let { path ->
+            val file = File(path)
+            file.parentFile?.mkdirs()
+            file.writeText(out.toString())
+        }
     }
 
     private class Counters {

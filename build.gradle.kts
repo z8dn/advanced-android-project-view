@@ -151,8 +151,16 @@ tasks {
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             events("failed")
             showStackTraces = true
-            // the index benchmark prints its measurements; they are worthless if CI swallows them
-            showStandardStreams = true
+        }
+
+        // ProjectFileIndexBenchmarkTest writes its measurements here; echoing them at the end of
+        // the task puts them where a CI log is actually readable, rather than somewhere in the
+        // middle of every test's stdout.
+        val benchmarkReport = layout.buildDirectory.file("reports/a2pt-benchmark.txt")
+        systemProperty("a2pt.benchmark.report", benchmarkReport.get().asFile.absolutePath)
+        doLast {
+            val report = benchmarkReport.get().asFile
+            if (report.exists()) println(System.lineSeparator() + report.readText())
         }
     }
 
