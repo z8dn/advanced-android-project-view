@@ -60,10 +60,18 @@ dependencies {
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
         testFramework(TestFrameworkType.Platform)
-        // HeavyPlatformTestCase creates real modules with content roots, which needs the Java
-        // plugin's test framework on top of the platform one.
-        testFramework(TestFrameworkType.Plugin.Java)
     }
+}
+
+// The IntelliJ Platform runs on JetBrains' fork of kotlinx-coroutines, which adds
+// runBlockingWithParallelismCompensation. Compose and Jewel pull stock kotlinx-coroutines onto the
+// test runtime classpath, where it shadows that fork and every platform test fixture dies in
+// TestApplication init with:
+//   NoSuchMethodError: kotlinx.coroutines.BuildersKt.runBlockingWithParallelismCompensation
+// Drop the stock artifact so the platform's own coroutines serve the tests.
+configurations.named("testRuntimeClasspath") {
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
