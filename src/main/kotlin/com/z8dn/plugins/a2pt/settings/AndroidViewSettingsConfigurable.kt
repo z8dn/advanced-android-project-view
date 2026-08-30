@@ -149,7 +149,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
         // Clear and rebuild the groups list to ensure proper change detection
         settings.projectFileGroups.clear()
         groupsTableModel?.getGroups()?.forEach { group ->
-            settings.projectFileGroups.add(ProjectFileGroup(group.groupName, group.patterns.toMutableList()))
+            settings.projectFileGroups.add(ProjectFileGroup(group.groupName, group.patterns.toMutableList(), group.customIconPath))
         }
 
         // Refresh all open projects to reflect the changes
@@ -166,7 +166,7 @@ class AndroidViewSettingsConfigurable : SearchableConfigurable {
 
         showBuildDirectoryCheckBox?.isSelected = settings.showBuildDirectory
         groupsTableModel?.setGroups(settings.projectFileGroups.map {
-            ProjectFileGroup(it.groupName, it.patterns.toMutableList())
+            ProjectFileGroup(it.groupName, it.patterns.toMutableList(), it.customIconPath)
         })
     }
 
