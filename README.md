@@ -72,9 +72,9 @@ Your preferences are saved automatically and will persist across IDE restarts.
 
 ## Compatibility
 
-- **Android Studio**: Quail 3 (2026.1.3) and later
-- **IntelliJ IDEA**: not supported — the plugin builds on the Android Project View, which only
-  Android Studio ships
+- **Android Studio**: Quail 1 (2026.1.1) and later, per `pluginSinceBuild = 261`
+- **IntelliJ IDEA**: not supported — the plugin targets Android Studio explicitly, by depending on
+  `com.intellij.modules.androidstudio`
 - **Platform**: All (Windows, macOS, Linux)
 
 ## Building from Source
