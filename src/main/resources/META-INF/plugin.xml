@@ -4,6 +4,10 @@
     <vendor url="https://z8dn.github.io/">Zayden</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <!-- Declared only by Android Studio's core plugin. Everything below hangs off the Android
+         view, so this keeps the Marketplace from listing - and verifying against - IntelliJ IDEA,
+         where org.jetbrains.android is a separate download that resolves inconsistently. -->
+    <depends>com.intellij.modules.androidstudio</depends>
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
     <depends>org.jetbrains.android</depends>
