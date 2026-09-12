@@ -31,10 +31,10 @@ Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced
 ## Installation
 
 ### From JetBrains Marketplace (Recommended)
-1. Open Android Studio/IntelliJ IDEA
+1. Open Android Studio
 2. Go to **Settings/Preferences** (⌘, on Mac or Ctrl+Alt+S on Windows/Linux) → **Plugins** → **Marketplace**
 3. Search for "Advanced Android Project Tree"
-4. Click **Install** and restart Android Studio/IntelliJ IDEA
+4. Click **Install** and restart Android Studio
 ![img/plugin-marketplace-installation.png](img/plugin-marketplace-installation.png)
 
 ### Manual Installation
@@ -72,8 +72,9 @@ Your preferences are saved automatically and will persist across IDE restarts.
 
 ## Compatibility
 
-- **Android Studio**: Otter 2 Feature Drop (2025.2.2) and later
-- **IntelliJ IDEA Ultimate**: 2025.2+ with Android plugin
+- **Android Studio**: Quail 3 (2026.1.3) and later
+- **IntelliJ IDEA**: not supported — the plugin builds on the Android Project View, which only
+  Android Studio ships
 - **Platform**: All (Windows, macOS, Linux)
 
 ## Building from Source
