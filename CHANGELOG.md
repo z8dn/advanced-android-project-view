@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-09-13
+
+- refactor: replace deprecated SimpleListCellRenderer.create by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/69
+- Changelog update - `v0.0.10` by @github-actions[bot] in https://github.com/z8dn/advanced-android-project-view/pull/68
+- perf: cache the project file sweep behind a project-level index by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/70
+- fix: clear the Marketplace plugin-verifier findings by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/71
+- chore: bump version to 0.0.11 by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/72
+
 ## [0.0.10] - 2026-08-09
 
 - Update JetBrains Plugin link in README by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/58
@@ -91,7 +99,8 @@
 
 - Initial release
 
-[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.10...HEAD
+[Unreleased]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.11...HEAD
+[0.0.11]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.8...v0.0.9
 [0.0.8]: https://github.com/z8dn/advanced-android-project-view/compare/v0.0.7...v0.0.8
