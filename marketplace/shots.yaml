@@ -1,0 +1,61 @@
+# JetBrains Marketplace screenshots, composed with mpshots.
+# Capture checklist and commands: marketplace/README.md
+
+output:
+  width: 2560
+  dir: out
+
+theme: dark
+
+brand:
+  name: Advanced Android Project Tree
+  logo: ../src/main/resources/META-INF/pluginIcon_dark.svg
+  accent: "#71D98C"
+
+defaults:
+  uiScale: 2              # Retina capture at 100% IDE zoom; use 1.5 for a 2560×1440 capture at 150%
+  footnote: Android Studio Quail and later
+
+slides:
+  - id: overview
+    layout: hero
+    headline: The files Android view hides, one click away
+    body: Build outputs and project files, right in the tree you already use.
+    screenshot:
+      src: screenshots/overview.png
+      # crop: [x, y, w, h]
+
+  - id: build-directory
+    layout: text-left
+    align: center
+    headline: Show build/ inside every module
+    body: Generated sources and intermediates sit next to the code that produced them. No switching to Project view.
+    screenshot:
+      src: screenshots/build-directory.png
+      # highlight: [x, y, w, h]   # the "Display Build Directory" item
+
+  - id: file-groups
+    layout: text-right
+    align: center
+    headline: Group the files you keep reaching for
+    body: Docs, CI config, AI rules. Name a group, give it a few globs, and it shows up in the tree.
+    screenshot:
+      src: screenshots/file-groups.png
+
+  - id: group-dialog
+    layout: text-left
+    align: center
+    headline: See what a pattern matches before you save it
+    body: The match preview updates as you type, and ! excludes files.
+    footnote: []
+    screenshot:
+      src: screenshots/group-dialog.png
+
+  - id: search-scope
+    layout: text-right
+    align: center
+    headline: Search inside a group
+    body: Every file group is a scope in Find in Files.
+    footnote: []
+    screenshot:
+      src: screenshots/search-scope.png
