@@ -2,41 +2,54 @@
 
 Slides for the JetBrains Marketplace listing are composed by
 [mpshots](https://github.com/jreznot/mpshots) from raw IDE captures in `screenshots/`.
-The slide copy and layout live in `shots.yaml`.
+Slide copy, layout and crops live in `shots.yaml`.
 
-## 1. Capture
+Needs macOS on the built-in Retina display, an Android SDK, and Node.js 18.17+.
 
-Use Android Studio with the default dark theme (Darcula / Islands Dark) and a sample Android
-project with a few modules. Keep personal data out of the frame.
-
-- **Size:** 2560×1440. On a Retina Mac, capture a 1280×720 window at 100% zoom (`uiScale: 2`).
-  On a 1x display, use **View › Appearance › Zoom IDE** at 150% and set `uiScale: 1.5` in `shots.yaml`.
-- **No window shadow:** on macOS, hold <kbd>Option</kbd> when clicking the window in
-  <kbd>⇧⌘4</kbd> <kbd>Space</kbd> mode.
-
-| File | What to show |
-|---|---|
-| `overview.png` | Android view with `build/` expanded under `app`, and a file group with a few files in it |
-| `build-directory.png` | Project pane ⋮ › Appearance menu open, with **Display Build Directory** checked |
-| `file-groups.png` | Settings › Tools › Advanced Android Project Tree with two or three groups |
-| `group-dialog.png` | Edit Custom File Group with patterns including one `!` exclusion, and the match preview filled |
-| `search-scope.png` | Find in Files, with the scope dropdown open on a project file group |
-
-## 2. Frame and build
-
-Requires Node.js 18.17+. mpshots is installed from GitHub, not npm, so the tag below is the pin.
+## 1. Start the IDE
 
 ```bash
-cd marketplace
-npx --yes github:jreznot/mpshots#v0.1.0 grid screenshots/overview.png
+marketplace/capture.sh ide
 ```
 
-The grid image gives pixel coordinates for each slide's `crop` and `highlight` in `shots.yaml`.
-A tighter crop makes the IDE text larger.
+This clones [nowinandroid](https://github.com/android/nowinandroid) to `~/a2pt-sample`
+(override with `A2PT_SAMPLE`), builds it once so `build/` has content, preloads the plugin
+settings (build directory on, `Docs` and `CI` file groups), and opens the project in a sandbox
+Android Studio with the plugin installed. Wait for Gradle sync to finish.
+
+## 2. Capture
 
 ```bash
-npx --yes github:jreznot/mpshots#v0.1.0 build
+marketplace/capture.sh
 ```
 
-Slides are written to `out/` (git-ignored). Open `out/index.html` to see them at roughly carousel
-size, then upload the PNGs to the Marketplace listing.
+The script resizes the IDE window to 1280×720 pt, then walks through each shot. For each one it
+says what to put on screen, counts down 8 seconds with a tick per second, captures exactly the
+window, and checks the result is 2560×1440. Press `r` to retake.
+
+Afterwards it builds the slides into `out/` (git-ignored), opens `out/index.html`, and offers to
+commit and push the captures.
+
+To retake only some shots:
+
+```bash
+marketplace/capture.sh group-dialog search-scope
+```
+
+The first run asks for Accessibility (window resize) and Screen Recording (capture) permission
+for your terminal.
+
+## 3. Ship
+
+Upload `out/*.png` to the plugin's Marketplace page. `plugin-install.png` is not a slide. It is
+only for the GitHub README.
+
+## Adjusting a crop
+
+```bash
+cd marketplace && npx --yes github:jreznot/mpshots#v0.1.0 grid screenshots/overview.png
+```
+
+Read the rectangle off `screenshots/overview.grid.png` and update that slide's `crop` in
+`shots.yaml`. Keep the width and height close to the existing values so IDE text stays legible.
+`validate` warns if a crop makes it too small or upscaled.

@@ -1,5 +1,6 @@
 # JetBrains Marketplace screenshots, composed with mpshots.
-# Capture checklist and commands: marketplace/README.md
+# Captures come from marketplace/capture.sh: a 1280×720 pt IDE window on Retina, so 2560×1440 px.
+# Crops are [x, y, w, h] in those pixels, sized so IDE text stays legible and nothing is upscaled.
 
 output:
   width: 2560
@@ -13,7 +14,7 @@ brand:
   accent: "#71D98C"
 
 defaults:
-  uiScale: 2              # Retina capture at 100% IDE zoom; use 1.5 for a 2560×1440 capture at 150%
+  uiScale: 2
   footnote: Android Studio Quail and later
 
 slides:
@@ -23,7 +24,7 @@ slides:
     body: Build outputs and project files, right in the tree you already use.
     screenshot:
       src: screenshots/overview.png
-      # crop: [x, y, w, h]
+      crop: [0, 0, 2200, 1000]           # project pane and the start of the editor
 
   - id: build-directory
     layout: text-left
@@ -32,7 +33,7 @@ slides:
     body: Generated sources and intermediates sit next to the code that produced them. No switching to Project view.
     screenshot:
       src: screenshots/build-directory.png
-      # highlight: [x, y, w, h]   # the "Display Build Directory" item
+      crop: [300, 0, 1300, 1400]         # options menu and its Appearance submenu
 
   - id: file-groups
     layout: text-right
@@ -41,6 +42,7 @@ slides:
     body: Docs, CI config, AI rules. Name a group, give it a few globs, and it shows up in the tree.
     screenshot:
       src: screenshots/file-groups.png
+      crop: [1000, 100, 1300, 1300]      # right half of the Settings dialog
 
   - id: group-dialog
     layout: text-left
@@ -50,6 +52,7 @@ slides:
     footnote: []
     screenshot:
       src: screenshots/group-dialog.png
+      crop: [640, 140, 1300, 1300]       # the dialog, centered in the window
 
   - id: search-scope
     layout: text-right
@@ -59,3 +62,4 @@ slides:
     footnote: []
     screenshot:
       src: screenshots/search-scope.png
+      crop: [900, 0, 1300, 1300]         # Find in Files popup and its scope dropdown

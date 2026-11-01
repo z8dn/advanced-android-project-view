@@ -11,3 +11,4 @@ build
 .claude/
 .worktrees/
 marketplace/out
+marketplace/screenshots/*.grid.png
