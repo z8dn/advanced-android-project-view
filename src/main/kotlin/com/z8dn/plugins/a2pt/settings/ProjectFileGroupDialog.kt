@@ -66,6 +66,14 @@ class ProjectFileGroupDialog(
     private val patternsTableModel = PatternsTableModel()
     private val patternsTable: JBTable
 
+    /** Overrides the pattern-derived icon in the tree; [FileGroupIconOption.AUTO] leaves it derived. */
+    private val iconComboBox = ComboBox(FileGroupIconOption.entries.toTypedArray()).apply {
+        // SimpleListCellRenderer is deprecated for removal and the listCellRenderer DSL is
+        // @ApiStatus.Experimental, which verifyPlugin reports; this renders icon and text with
+        // the same stable component the preview list below already uses.
+        renderer = IconOptionRenderer()
+    }
+
     private val previewModel = CollectionListModel<PreviewRow>()
     private val previewList = JBList(previewModel)
     private val matchCountLabel = JBLabel()
@@ -153,6 +161,7 @@ class ProjectFileGroupDialog(
         existingGroup?.let {
             groupNameField.text = it.groupName
             patternsTableModel.setPatterns(it.patterns)
+            iconComboBox.selectedItem = FileGroupIconOption.fromIconPath(it.customIconPath)
         }
 
         init()
@@ -165,11 +174,22 @@ class ProjectFileGroupDialog(
         }
 
         val namePanel = JPanel(BorderLayout(0, JBUI.scale(4))).apply {
-            border = JBUI.Borders.emptyBottom(10)
             add(JBLabel(AndroidViewBundle.message("dialog.ProjectFileGroup.GroupName.text")), BorderLayout.NORTH)
             add(groupNameField, BorderLayout.CENTER)
         }
-        root.add(namePanel, BorderLayout.NORTH)
+
+        val iconPanel = JPanel(BorderLayout(0, JBUI.scale(4))).apply {
+            add(JBLabel(AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.text")), BorderLayout.NORTH)
+            add(iconComboBox, BorderLayout.CENTER)
+        }
+
+        // Name takes the slack; the picker keeps its preferred width on the right.
+        val headerPanel = JPanel(BorderLayout(JBUI.scale(8), 0)).apply {
+            border = JBUI.Borders.emptyBottom(10)
+            add(namePanel, BorderLayout.CENTER)
+            add(iconPanel, BorderLayout.EAST)
+        }
+        root.add(headerPanel, BorderLayout.NORTH)
 
         val splitter = OnePixelSplitter(false, SPLITTER_PROPORTION).apply {
             firstComponent = createPatternsPanel()
@@ -448,9 +468,11 @@ class ProjectFileGroupDialog(
      */
     fun getProjectFileGroup(): ProjectFileGroup {
         stopEditing()
+        val selectedIcon = iconComboBox.selectedItem as? FileGroupIconOption
         return ProjectFileGroup(
             groupName = groupNameField.text.trim(),
-            patterns = patternsTableModel.patterns().filter { it.isNotBlank() }.toMutableList()
+            patterns = patternsTableModel.patterns().filter { it.isNotBlank() }.toMutableList(),
+            customIconPath = selectedIcon?.iconPath
         )
     }
 
@@ -620,6 +642,24 @@ class ProjectFileGroupDialog(
                 SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, foreground)
             }
             append(text, attributes)
+        }
+    }
+
+    /**
+     * Renders an icon choice as the icon itself next to its name, so the picker shows what the
+     * group node will actually look like rather than only naming it.
+     */
+    private class IconOptionRenderer : ColoredListCellRenderer<FileGroupIconOption>() {
+        override fun customizeCellRenderer(
+            list: javax.swing.JList<out FileGroupIconOption>,
+            value: FileGroupIconOption?,
+            index: Int,
+            selected: Boolean,
+            hasFocus: Boolean
+        ) {
+            val option = value ?: FileGroupIconOption.AUTO
+            icon = option.icon
+            append(option.displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
         }
     }
 

@@ -12,7 +12,8 @@ import com.intellij.util.xmlb.XmlSerializerUtil
  */
 data class ProjectFileGroup(
     var groupName: String = "",
-    var patterns: MutableList<String> = mutableListOf()
+    var patterns: MutableList<String> = mutableListOf(),
+    var customIconPath: String? = null
 )
 
 @State(
