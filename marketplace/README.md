@@ -8,17 +8,19 @@ Needs Node.js 18.17+. Taking new captures needs macOS on a Retina display.
 
 ## Captures
 
-`screenshots/*.png` are taken by hand, one per slide, each named after that slide's `id` in
-`shots.yaml`. They come from a sandbox IDE (`./gradlew runIde`, which skips Android Studio's
-first-run wizard) with the plugin's settings already configured, opened on a project with enough
-modules to be worth showing. The current set uses
+`screenshots/<slide-id>.png` is one capture per slide, named after that slide's `id` in
+`shots.yaml`. `plugin-install.png` is a sixth capture that no slide uses; it is there for the
+GitHub README only. They come from a sandbox IDE (`./gradlew runIde`, which skips Android
+Studio's first-run wizard) with the plugin's settings already configured, opened on a project
+with enough modules to be worth showing. The current set uses
 [nowinandroid](https://github.com/android/nowinandroid) with the build directory shown and `Docs`
 and `CI` file groups defined.
 
-In `⌃⇧⌘4`, pressing Space and then `⌥`-clicking the window grabs the window alone — no desktop
-behind it, no drop shadow — which on Retina gives the 2560×1440 mpshots expects. A menu or dialog
-that reaches outside the window needs a dragged region instead and comes out another size;
-`validate` warns about that, but the crop still works.
+In `⇧⌘4`, pressing Space and then `⌥`-clicking the window saves the window alone — no desktop
+behind it, no drop shadow — which on Retina is the 2560×1440 mpshots expects. macOS writes it to
+the screenshot location, the Desktop unless you have changed it, so move it into `screenshots/`
+under the slide's id. A menu or dialog that reaches outside the window needs a dragged region
+instead and comes out another size; `validate` warns about that, but the crop still works.
 
 ## Build
 
