@@ -178,6 +178,15 @@ tasks {
         jvmArgs("-Ddisable.android.first.run=true")
     }
 
+    // marketplace/capture.sh preloads plugin settings into the sandbox before starting the IDE.
+    // Which sandbox that is depends on the platform version, and sandboxes for several versions
+    // live side by side under .intellijPlatform/sandbox, so let Gradle resolve the one runIde
+    // will actually use rather than guessing from the directory layout.
+    register("printSandboxConfigDirectory") {
+        val configDirectory = runIde.flatMap { it.sandboxConfigDirectory }
+        doLast { println(configDirectory.get().asFile.absolutePath) }
+    }
+
     publishPlugin {
         dependsOn(patchChangelog)
     }

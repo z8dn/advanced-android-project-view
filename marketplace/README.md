@@ -24,8 +24,14 @@ marketplace/capture.sh
 ```
 
 The script resizes the IDE window to 1280×720 pt, then walks through each shot. For each one it
-says what to put on screen, counts down 8 seconds with a tick per second, captures exactly the
-window, and checks the result is 2560×1440. Press `r` to retake.
+says what to put on screen and waits. You take the shot yourself with `⌃⇧⌘4` — holding `⌃` copies
+it to the clipboard instead of writing a file — and press Enter. The script saves the clipboard to
+`screenshots/<name>.png` and reports the size. Press `r` to retake.
+
+Within `⌃⇧⌘4`, pressing Space and then `⌥`-clicking the window grabs the window alone, with no
+desktop behind it and no drop shadow, which on Retina is exactly the 2560×1440 mpshots wants. The
+two shots with a menu open need a dragged region instead, because a menu reaches outside the
+window; those come out another size, which `validate` only warns about.
 
 Afterwards it builds the slides into `out/` (git-ignored), opens `out/index.html`, and offers to
 commit and push the captures.
@@ -36,8 +42,8 @@ To retake only some shots:
 marketplace/capture.sh group-dialog search-scope
 ```
 
-The first run asks for Accessibility (window resize) and Screen Recording (capture) permission
-for your terminal.
+The first run asks for Accessibility permission for your terminal, for the window resize. Taking
+the shots goes through macOS's own screenshot service, so it needs nothing granted.
 
 ## 3. Ship
 
