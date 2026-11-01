@@ -1,0 +1,71 @@
+# JetBrains Marketplace screenshots, composed with mpshots.
+# Captures are hand-taken from a 1280×720 pt IDE window on Retina, so 2560×1440 px. See README.md.
+# Window captures keep macOS's drop shadow, so the window itself starts at +111+75 and crops are
+# offset by that much. Crops are [x, y, w, h] in source pixels.
+#
+# Legibility and sharpness both depend on zoom = max(rect.w / crop.w, rect.h / crop.h), where rect
+# is 1600×700 for hero and 928×980 for text-left and text-right. With uiScale 2 and a 2560 output,
+# zoom has to stay between 0.62 (IDE text readable) and 0.79 (nothing upscaled).
+
+output:
+  width: 2560
+  dir: out
+
+theme: dark
+
+brand:
+  name: Advanced Android Project Tree
+  logo: ../src/main/resources/META-INF/pluginIcon_dark.svg
+  accent: "#71D98C"
+
+defaults:
+  uiScale: 2
+  footnote: Android Studio Quail and later
+
+slides:
+  - id: overview
+    layout: hero
+    headline: The files Android view hides, one click away
+    body: Build outputs and project files, right in the tree you already use.
+    screenshot:
+      src: screenshots/overview.png
+      crop: [111, 75, 2300, 1006]        # tree with build/ and the groups, plus the open README
+
+  - id: build-directory
+    layout: text-right
+    align: center
+    headline: Show build/ inside every module
+    body: Generated sources and intermediates sit next to the code that produced them. No switching to Project view.
+    screenshot:
+      src: screenshots/build-directory.png
+      crop: [600, 30, 1500, 1280]        # both menus; the tree runs off the left edge
+      highlight: [1495, 645, 330, 50]    # the Display Build Directory item
+
+  - id: file-groups
+    layout: text-left
+    align: center
+    headline: Group the files you keep reaching for
+    body: Docs, CI config, AI rules. Name a group, give it a few globs, and it shows up in the tree.
+    screenshot:
+      src: screenshots/file-groups.png
+      crop: [726, 75, 1583, 1500]        # settings page from its divider; buttons run off the right
+
+  - id: group-dialog
+    layout: text-right
+    align: center
+    headline: See what a pattern matches before you save it
+    body: The match preview updates as you type, and ! excludes files.
+    footnote: []
+    screenshot:
+      src: screenshots/group-dialog.png
+      crop: [719, 75, 962, 1016]         # match preview and the per-pattern file counts
+
+  - id: search-scope
+    layout: text-left
+    align: center
+    headline: Search inside a group
+    body: Every file group is a scope in Find in Files.
+    footnote: []
+    screenshot:
+      src: screenshots/search-scope.png
+      crop: [0, 0, 1085, 1146]           # scope dropdown down to the Project File Groups section
