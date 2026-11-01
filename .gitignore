@@ -12,3 +12,4 @@ build
 .worktrees/
 marketplace/out
 marketplace/screenshots/*.grid.png
+.DS_Store

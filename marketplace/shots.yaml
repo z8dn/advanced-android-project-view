@@ -1,5 +1,5 @@
 # JetBrains Marketplace screenshots, composed with mpshots.
-# Captures come from marketplace/capture.sh: a 1280×720 pt IDE window on Retina, so 2560×1440 px.
+# Captures are hand-taken from a 1280×720 pt IDE window on Retina, so 2560×1440 px. See README.md.
 # Window captures keep macOS's drop shadow, so the window itself starts at +111+75 and crops are
 # offset by that much. Crops are [x, y, w, h] in source pixels.
 #

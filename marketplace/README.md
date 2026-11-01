@@ -4,48 +4,32 @@ Slides for the JetBrains Marketplace listing are composed by
 [mpshots](https://github.com/jreznot/mpshots) from raw IDE captures in `screenshots/`.
 Slide copy, layout and crops live in `shots.yaml`.
 
-Needs macOS on the built-in Retina display, an Android SDK, and Node.js 18.17+.
+Needs Node.js 18.17+. Taking new captures needs macOS on a Retina display.
 
-## 1. Start the IDE
+## Captures
 
-```bash
-marketplace/capture.sh ide
-```
+`screenshots/*.png` are taken by hand, one per slide, each named after that slide's `id` in
+`shots.yaml`. They come from a sandbox IDE (`./gradlew runIde`, which skips Android Studio's
+first-run wizard) with the plugin's settings already configured, opened on a project with enough
+modules to be worth showing. The current set uses
+[nowinandroid](https://github.com/android/nowinandroid) with the build directory shown and `Docs`
+and `CI` file groups defined.
 
-This clones [nowinandroid](https://github.com/android/nowinandroid) to `~/a2pt-sample`
-(override with `A2PT_SAMPLE`), builds it once so `build/` has content, preloads the plugin
-settings (build directory on, `Docs` and `CI` file groups), and opens the project in a sandbox
-Android Studio with the plugin installed. Wait for Gradle sync to finish.
+In `⌃⇧⌘4`, pressing Space and then `⌥`-clicking the window grabs the window alone — no desktop
+behind it, no drop shadow — which on Retina gives the 2560×1440 mpshots expects. A menu or dialog
+that reaches outside the window needs a dragged region instead and comes out another size;
+`validate` warns about that, but the crop still works.
 
-## 2. Capture
-
-```bash
-marketplace/capture.sh
-```
-
-The script resizes the IDE window to 1280×720 pt, then walks through each shot. For each one it
-says what to put on screen and waits. You take the shot yourself with `⌃⇧⌘4` — holding `⌃` copies
-it to the clipboard instead of writing a file — and press Enter. The script saves the clipboard to
-`screenshots/<name>.png` and reports the size. Press `r` to retake.
-
-Within `⌃⇧⌘4`, pressing Space and then `⌥`-clicking the window grabs the window alone, with no
-desktop behind it and no drop shadow, which on Retina is exactly the 2560×1440 mpshots wants. The
-two shots with a menu open need a dragged region instead, because a menu reaches outside the
-window; those come out another size, which `validate` only warns about.
-
-Afterwards it builds the slides into `out/` (git-ignored), opens `out/index.html`, and offers to
-commit and push the captures.
-
-To retake only some shots:
+## Build
 
 ```bash
-marketplace/capture.sh group-dialog search-scope
+cd marketplace && npx --yes github:jreznot/mpshots#v0.1.0 build
 ```
 
-The first run asks for Accessibility permission for your terminal, for the window resize. Taking
-the shots goes through macOS's own screenshot service, so it needs nothing granted.
+Slides land in `out/`, which is git-ignored. Open `out/index.html` to see them at roughly the
+size the Marketplace carousel shows.
 
-## 3. Ship
+## Ship
 
 Upload `out/*.png` to the plugin's Marketplace page. `plugin-install.png` is not a slide. It is
 only for the GitHub README.
@@ -57,5 +41,10 @@ cd marketplace && npx --yes github:jreznot/mpshots#v0.1.0 grid screenshots/overv
 ```
 
 Read the rectangle off `screenshots/overview.grid.png` and update that slide's `crop` in
-`shots.yaml`. Keep the width and height close to the existing values so IDE text stays legible.
-`validate` warns if a crop makes it too small or upscaled.
+`shots.yaml`. Crops are measured on the image, not the window: captures taken with the drop
+shadow put the window itself at an offset, +111+75 for the current set.
+
+How large the IDE ends up is `zoom = max(rect.w / crop.w, rect.h / crop.h)`, where `rect` is
+1600×700 for `hero` and 928×980 for `text-left` and `text-right`. With `uiScale: 2` and a 2560
+output, zoom has to stay between 0.62, below which IDE text stops being legible, and 0.79, above
+which the capture is upscaled and looks soft. `validate` warns on both.
