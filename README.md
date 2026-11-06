@@ -14,6 +14,7 @@
   <li><strong>Quick Access to Build Directories:</strong> Navigate directly to build outputs, generated sources, and intermediate files without switching views or using the file system explorer.</li>
   <li><strong>Customizable Project Groups:</strong> Organize project files with configurable groups in the project tree, tailored to your workflow and development needs.</li>
   <li><strong>Hidden Files Visibility:</strong> Easily access configuration files and directories that are typically hidden from the standard Android view, improving discoverability and reducing context switching.</li>
+  <li><strong>Search Within a Group:</strong> Every file group is available as a scope in Find in Files, so you can search only your docs, CI config, or AI rules.</li>
 </ul>
 <!-- Plugin description end -->
 
@@ -22,9 +23,9 @@
 We have exciting plans for future updates! Here are some features currently under consideration or in development:
 
 - [x] **IDE Account Sync**: Sync your custom group configurations across different machines using your IDE account
+- [x] **Enhanced Filtering**: Exclusion patterns (`!archive/*.md`) and path-based globs (`docs/**`) for file groups ([#32](https://github.com/z8dn/advanced-android-project-view/issues/32))
 - [ ] **Saved Presets**: Pre-defined file groups for common stacks (KMP, Compose Multiplatform, etc.) ([#30](https://github.com/z8dn/advanced-android-project-view/issues/30))
 - [ ] **Dynamic Icons**: Customizable icons for specific file patterns ([#31](https://github.com/z8dn/advanced-android-project-view/issues/31))
-- [ ] **Enhanced Filtering**: More advanced pattern matching for file groups ([#32](https://github.com/z8dn/advanced-android-project-view/issues/32))
 
 Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced-android-project-view/issues) or start a [discussion](https://github.com/z8dn/advanced-android-project-view/discussions)!
 
@@ -46,29 +47,55 @@ Have a suggestion? Feel free to open an [issue](https://github.com/z8dn/advanced
 
 ## Usage
 
+![The files Android view hides, one click away](img/slides/01-overview.webp)
+
 ### Toggle Build Directory Visibility
 1. Open the Android Project View
-2. Click the **Android** dropdown at the top of the project pane
-3. Look for "Display Build Directory" in the appearance actions menu
-4. Toggle the option on/off
-![img/build-directory-toggle.png](img/build-directory-toggle.png)
-Alternatively, right-click in the Project View toolbar and select appearance options.
+2. Click the ⋮ (Options) menu in the Project tool window header and open **Appearance**
+3. Toggle **Display Build Directory** on or off
+
+![Show build/ inside every module](img/slides/02-build-directory.webp)
+
+The same menu also has:
+- **Display Project Files in Modules** — list matched files directly under the module that contains them, instead of in group folders at the project root
+- **Customize Android Tree View...** — opens the plugin's settings page
 
 ### Configure Project File Groups
 1. Go to **Settings/Preferences** → **Tools** → **Advanced Android Project Tree**
-2. Click **Add** to create a new file group
-3. Enter a group name (e.g., "Documentation", "AI Rules")
-   ![img/settings-custom-file-groups.png](img/settings-custom-file-groups.png)
-4. Add file patterns using wildcards (e.g., `*.md`) or exact filenames (e.g., `CLAUDE.md`)
-![img/edit-file-group-dialog.png](img/edit-file-group-dialog.png)
+2. Click **Add** (+) to create a new file group
+3. Enter a group name (e.g., "Docs", "CI", "AI Rules")
+4. Add file patterns. The **Matches** preview updates as you type and shows how many files each pattern picks up
 5. Click **OK** to apply changes
 
-**Pattern Examples:**
-- `*.md` - All Markdown files
-- `CLAUDE.md` - Claude AI rules file
-- `*.yml` - All YAML configuration files
+![Group the files you keep reaching for](img/slides/03-file-groups.webp)
 
-Your preferences are saved automatically and will persist across IDE restarts.
+![See what a pattern matches before you save it](img/slides/04-group-dialog.webp)
+
+A group with no matching files does not appear in the tree.
+
+**Pattern Rules:**
+- A pattern without `/` matches file names at the top level of the project and of each module, not in subfolders: `*.md`, `CLAUDE.md`
+- A pattern with `/` matches the path from the project root and should start with a folder name: `docs/*.md`, `.github/workflows/*.yml`
+- `*` stays within one folder, `**` crosses folders: `docs/*.md` matches `docs/guide.md` only, while `docs/**` also matches `docs/api/v1.md`
+- A pattern starting with `!` excludes files: `!docs/archive/**`, `!*.draft`
+- Matching is case-insensitive
+- Each group needs at least one inclusion pattern
+
+**Pattern Examples:**
+- `*.md` — Markdown files at the top of the project and each module, like `README.md`
+- `CLAUDE.md`, `AGENTS.md` — AI rules files
+- `.github/**` — everything under `.github/`
+- `docs/**` + `!docs/archive/**` — everything under `docs/` except `docs/archive/`
+
+### Add a Directory from the Project View
+Right-click a directory in the Project View and choose **Include Directory in File Group**. Pick an existing group to add `<directory>/**` to it, or **New Group...** to create a group from that directory.
+
+### Search Within a File Group
+In **Find in Files** (⇧⌘F on Mac, Ctrl+Shift+F on Windows/Linux), choose **Scope** and pick a group under **Project File Groups**.
+
+![Search inside a group](img/slides/05-search-scope.webp)
+
+Settings are saved automatically, persist across IDE restarts, and sync across machines when Settings Sync is turned on.
 
 ## Compatibility
 
@@ -81,8 +108,8 @@ Your preferences are saved automatically and will persist across IDE restarts.
 
 ### Prerequisites
 - JDK 21 or later
-- Gradle 8.14.3 or later (included via wrapper)
-- Android Studio Otter 3 or later (for local development)
+- Gradle 9.7.0 (included via wrapper)
+- Android Studio Quail 3 or later (for local development)
 
 ### Build Steps
 
@@ -96,6 +123,8 @@ cd advanced-android-project-view
 
 # The plugin ZIP will be created in build/distributions/
 ```
+
+To try your changes, `./gradlew runIde` starts a sandbox Android Studio with the plugin installed, and `./gradlew test` runs the unit tests. See [CONTRIBUTING.md](CONTRIBUTING.md) for more.
 
 ## License
 
