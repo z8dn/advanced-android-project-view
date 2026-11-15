@@ -60,6 +60,7 @@ Alternatively, right-click in the Project View toolbar and select appearance opt
 3. Enter a group name (e.g., "Documentation", "AI Rules")
    ![img/settings-custom-file-groups.png](img/settings-custom-file-groups.png)
 4. Add file patterns using wildcards (e.g., `*.md`) or exact filenames (e.g., `CLAUDE.md`)
+   Optionally pick an icon for the group; **Auto** derives it from the patterns.
 ![img/edit-file-group-dialog.png](img/edit-file-group-dialog.png)
 5. Click **OK** to apply changes
 

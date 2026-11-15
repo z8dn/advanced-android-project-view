@@ -2,6 +2,9 @@ package com.z8dn.plugins.a2pt.settings
 
 import com.z8dn.plugins.a2pt.AndroidViewBundle
 import com.z8dn.plugins.a2pt.utils.AndroidViewNodeUtils
+import com.z8dn.plugins.a2pt.utils.GroupIconCatalog
+import com.z8dn.plugins.a2pt.utils.GroupIconEntry
+import com.z8dn.plugins.a2pt.utils.GroupIconResolver
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.util.PropertiesComponent
@@ -40,6 +43,7 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.DefaultCellEditor
+import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
@@ -66,8 +70,13 @@ class ProjectFileGroupDialog(
     private val patternsTableModel = PatternsTableModel()
     private val patternsTable: JBTable
 
-    /** Overrides the pattern-derived icon in the tree; [FileGroupIconOption.AUTO] leaves it derived. */
-    private val iconComboBox = ComboBox(FileGroupIconOption.entries.toTypedArray()).apply {
+    /** What the "Auto" row shows: the icon auto-detection gives for the patterns as currently typed. */
+    private var autoIcon: Icon = AllIcons.Nodes.Folder
+
+    /** Overrides the pattern-derived icon in the tree; [IconChoice.AUTO] leaves it derived. */
+    private val iconComboBox = ComboBox(
+        (listOf(IconChoice.AUTO) + GroupIconCatalog.entries.map { IconChoice(it) }).toTypedArray()
+    ).apply {
         // SimpleListCellRenderer is deprecated for removal and the listCellRenderer DSL is
         // @ApiStatus.Experimental, which verifyPlugin reports; this renders icon and text with
         // the same stable component the preview list below already uses.
@@ -161,7 +170,8 @@ class ProjectFileGroupDialog(
         existingGroup?.let {
             groupNameField.text = it.groupName
             patternsTableModel.setPatterns(it.patterns)
-            iconComboBox.selectedItem = FileGroupIconOption.fromIconPath(it.customIconPath)
+            iconComboBox.selectedItem =
+                GroupIconCatalog.find(it.iconKey)?.let { entry -> IconChoice(entry) } ?: IconChoice.AUTO
         }
 
         init()
@@ -309,6 +319,8 @@ class ProjectFileGroupDialog(
     // region preview
 
     private fun scheduleRecompute() {
+        autoIcon = GroupIconResolver.autoDetectFromPatterns(patternsTableModel.patterns().filter { it.isNotBlank() })
+        iconComboBox.repaint()
         recomputeQueue.queue(Update.create(RECOMPUTE_QUEUE_NAME) { recompute() })
     }
 
@@ -468,11 +480,10 @@ class ProjectFileGroupDialog(
      */
     fun getProjectFileGroup(): ProjectFileGroup {
         stopEditing()
-        val selectedIcon = iconComboBox.selectedItem as? FileGroupIconOption
         return ProjectFileGroup(
             groupName = groupNameField.text.trim(),
             patterns = patternsTableModel.patterns().filter { it.isNotBlank() }.toMutableList(),
-            customIconPath = selectedIcon?.iconPath
+            iconKey = (iconComboBox.selectedItem as? IconChoice)?.entry?.key
         )
     }
 
@@ -645,21 +656,31 @@ class ProjectFileGroupDialog(
         }
     }
 
+    /** A combo item: a catalog [entry], or [AUTO] (null entry) to derive the icon from the patterns. */
+    private data class IconChoice(val entry: GroupIconEntry?) {
+        companion object {
+            val AUTO = IconChoice(null)
+        }
+    }
+
     /**
      * Renders an icon choice as the icon itself next to its name, so the picker shows what the
      * group node will actually look like rather than only naming it.
      */
-    private class IconOptionRenderer : ColoredListCellRenderer<FileGroupIconOption>() {
+    private inner class IconOptionRenderer : ColoredListCellRenderer<IconChoice>() {
         override fun customizeCellRenderer(
-            list: javax.swing.JList<out FileGroupIconOption>,
-            value: FileGroupIconOption?,
+            list: javax.swing.JList<out IconChoice>,
+            value: IconChoice?,
             index: Int,
             selected: Boolean,
             hasFocus: Boolean
         ) {
-            val option = value ?: FileGroupIconOption.AUTO
-            icon = option.icon
-            append(option.displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+            val entry = value?.entry
+            icon = entry?.icon ?: autoIcon
+            append(
+                entry?.displayName ?: AndroidViewBundle.message("dialog.ProjectFileGroup.Icon.auto"),
+                SimpleTextAttributes.REGULAR_ATTRIBUTES
+            )
         }
     }
 
