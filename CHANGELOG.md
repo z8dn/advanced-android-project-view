@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- feat: choose an icon for each file group from a curated set, or keep the auto-detected one by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/43
+
 ## [0.0.11] - 2026-09-13
 
 - refactor: replace deprecated SimpleListCellRenderer.create by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/69

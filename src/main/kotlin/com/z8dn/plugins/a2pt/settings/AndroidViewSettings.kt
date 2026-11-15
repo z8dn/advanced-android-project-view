@@ -12,7 +12,9 @@ import com.intellij.util.xmlb.XmlSerializerUtil
  */
 data class ProjectFileGroup(
     var groupName: String = "",
-    var patterns: MutableList<String> = mutableListOf()
+    var patterns: MutableList<String> = mutableListOf(),
+    /** Key into [com.z8dn.plugins.a2pt.utils.GroupIconCatalog]; null auto-detects from the patterns. */
+    var iconKey: String? = null
 )
 
 @State(
