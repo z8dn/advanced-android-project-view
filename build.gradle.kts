@@ -172,6 +172,12 @@ tasks {
         }
     }
 
+    runIde {
+        // Skip Android Studio's first-run wizard in the sandbox. Projects find the SDK through
+        // their own local.properties, so a fresh sandbox opens straight into the project.
+        jvmArgs("-Ddisable.android.first.run=true")
+    }
+
     publishPlugin {
         dependsOn(patchChangelog)
     }

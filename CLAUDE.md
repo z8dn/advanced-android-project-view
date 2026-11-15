@@ -86,7 +86,13 @@ with it either way — so it now tracks the toolchain at `jbr-21`.
 ## Dependencies & Compatibility
 - Kotlin 2.4.10, JDK 21
 - IntelliJ Platform Gradle Plugin 2.18.1
-- Target: Android Studio Quail 3 (2026.1.3.7) and later, `pluginSinceBuild = 261`
+- Compiled against Android Studio Quail 3 (`platformVersion = 2026.1.3.7`), but installs on Quail 1
+  (261.22158.277) and later, because `pluginSinceBuild = 261` is a branch floor and Quail 1, 2 and 3
+  are all on branch 261. Don't assume an API is available just because it ships in Quail 3 — check
+  it against Quail 1 too.
+- Android Studio only: `plugin.xml` depends on `com.intellij.modules.androidstudio`, which keeps the
+  Marketplace from verifying against IntelliJ IDEA, where `org.jetbrains.android` resolves
+  inconsistently.
 - Bundled plugins used: `com.intellij.gradle`, `org.jetbrains.android`, `com.intellij.java`
 - No external runtime dependencies
 
