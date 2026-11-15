@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- feat: import and export file groups as JSON from the settings page ([#44](https://github.com/z8dn/advanced-android-project-view/issues/44))
+
 ## [0.0.11] - 2026-09-13
 
 - refactor: replace deprecated SimpleListCellRenderer.create by @z8dn in https://github.com/z8dn/advanced-android-project-view/pull/69

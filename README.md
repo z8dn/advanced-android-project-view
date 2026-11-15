@@ -68,6 +68,12 @@ Alternatively, right-click in the Project View toolbar and select appearance opt
 - `CLAUDE.md` - Claude AI rules file
 - `*.yml` - All YAML configuration files
 
+### Import and Export File Groups
+Use the **Export** and **Import** buttons in the toolbar above the groups table to share groups between machines or commit them with a project.
+- Groups are saved as readable JSON, by default in `.a2pt/file-groups.json` inside the current project
+- Importing into a non-empty list lets you **Merge** (same-named groups are replaced, new ones added) or **Replace**
+- Imported groups are only a draft until you click **Apply** or **OK**, and a file with any invalid group is rejected as a whole
+
 Your preferences are saved automatically and will persist across IDE restarts.
 
 ## Compatibility

@@ -406,23 +406,21 @@ class ProjectFileGroupDialog(
         }
 
         val patterns = patternsTableModel.patterns().filter { it.isNotBlank() }
-        if (patterns.isEmpty()) {
-            return ValidationInfo(AndroidViewBundle.message("dialog.Validation.PatternsEmpty.text"), patternsTable)
-        }
-
-        if (patterns.all { it.startsWith("!") }) {
-            return ValidationInfo(AndroidViewBundle.message("dialog.Validation.NoInclusionPattern.text"), patternsTable)
-        }
-
-        // Blocking: a pattern that does not compile is unambiguously broken and the fix is local.
-        // Checked directly rather than from the preview so it holds before the first scan lands
-        // and with no project open.
-        val invalid = patterns.firstOrNull { !AndroidViewNodeUtils.isValidGlob(it.removePrefix("!")) }
-        if (invalid != null) {
-            return ValidationInfo(
-                AndroidViewBundle.message("dialog.Validation.InvalidGlob.text", invalid),
-                patternsTable
-            )
+        // Blocking: these rules are shared with import. The glob check runs directly rather than
+        // from the preview so it holds before the first scan lands and with no project open.
+        when (val problem = ProjectFileGroupsSerializer.validateGroup(groupName, patterns)) {
+            null -> Unit
+            ProjectFileGroupsSerializer.GroupProblem.EmptyName ->
+                return ValidationInfo(AndroidViewBundle.message("dialog.Validation.GroupNameEmpty.text"), groupNameField)
+            ProjectFileGroupsSerializer.GroupProblem.NoPatterns, ProjectFileGroupsSerializer.GroupProblem.BlankPattern ->
+                return ValidationInfo(AndroidViewBundle.message("dialog.Validation.PatternsEmpty.text"), patternsTable)
+            ProjectFileGroupsSerializer.GroupProblem.NoInclusionPattern ->
+                return ValidationInfo(AndroidViewBundle.message("dialog.Validation.NoInclusionPattern.text"), patternsTable)
+            is ProjectFileGroupsSerializer.GroupProblem.InvalidGlob ->
+                return ValidationInfo(
+                    AndroidViewBundle.message("dialog.Validation.InvalidGlob.text", problem.pattern),
+                    patternsTable
+                )
         }
 
         // Non-blocking: a pattern may legitimately target a file that does not exist yet.
